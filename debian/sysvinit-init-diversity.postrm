@@ -1,0 +1,37 @@
+#!/bin/sh
+set -e
+
+# postrm script to reinstate poweroff/reboot/shutdown functions
+# provided by the 'init-diversity-tools' package which need to be
+# used by remaining inits
+
+if test -e /usr/lib/init-diversity/poweroff.sh; then
+	echo "Reinstating multi-init poweroff function"
+	ln -sf /usr/lib/init-diversity/poweroff.sh /usr/sbin/poweroff
+fi
+
+if test -e /usr/lib/init-diversity/reboot.sh; then
+	echo "Reinstating multi-init reboot function"
+	ln -sf /usr/lib/init-diversity/reboot.sh /usr/sbin/reboot
+fi
+
+if test -e /usr/lib/init-diversity/shutdown.sh; then
+	echo "Reinstating multi-init shutdown function"
+	ln -sf /usr/lib/init-diversity/shutdown.sh /usr/sbin/shutdown
+fi
+
+# Removed inits will need to be removed from the GRUB menu
+if mountpoint -q /live/aufs; then
+	echo "Live/Frugal system detected - Not updating GRUB"
+	exit 0
+elif [ "$(stat -c %d/%i /)" != "$(stat -Lc %d/%i /proc/1/root 2>/dev/null)" ]; then
+	echo "A chroot environment has been detected - Not updating GRUB"
+	exit 0
+else
+	echo "Updating GRUB to reveal the updated init entry"
+	update-grub
+fi
+
+#DEBHELPER#
+
+exit 0

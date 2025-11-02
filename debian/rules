@@ -1,0 +1,104 @@
+#! /usr/bin/make -f
+DEB_BUILD_MAINT_OPTIONS+=hardening=+all
+include /usr/share/dpkg/default.mk
+include debian/config/selinux.mk
+
+tmp     = $(CURDIR)/debian/tmp
+sysvtmp = $(CURDIR)/debian/sysvinit-core
+inittmp = $(CURDIR)/debian/initscripts
+doc	= /usr/share/doc
+
+LC_ALL	= POSIX
+
+INSTALL_DATA = install -m 644
+INSTALL      = install -m 755
+
+derives_from_ubuntu := $(shell (dpkg-vendor --derives-from Ubuntu && echo "yes") || echo "no")
+
+# Handle cross builds
+ifneq ($(DEB_HOST_GNU_TYPE),$(DEB_BUILD_GNU_TYPE))
+CROSS=CC=$(DEB_HOST_GNU_TYPE)-gcc
+# CROSS is passed to make, CC is called directly.
+CC=$(DEB_HOST_GNU_TYPE)-gcc
+endif
+
+DH_OPTIONS =
+
+# Use debhelper's dh
+%:
+	dh $@ $(DH_OPTIONS)
+
+override_dh_auto_build:
+	$(MAKE) $(CROSS) $(CONFFLAGS) DISTRO=Debian LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH) CFLAGS="$(CFLAGS) $(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+
+
+override_dh_auto_install-arch:
+	$(MAKE) -C src $(CROSS) ROOT=$(tmp) DISTRO=Debian install
+
+override_dh_auto_install-indep:
+	$(MAKE) -C debian/src/initscripts install DESTDIR=$(inittmp)
+
+override_dh_install-arch:
+	dh_install
+
+	# sysvinit package
+	if test -e debian/share/inittab.$(DEB_HOST_GNU_TYPE) ; \
+	then \
+		$(INSTALL_DATA) \
+			debian/share/inittab.$(DEB_HOST_GNU_TYPE) \
+			$(sysvtmp)/usr/share/sysvinit/inittab ; \
+	elif test -e debian/share/inittab.$(DEB_HOST_GNU_SYSTEM) ; \
+	then \
+		$(INSTALL_DATA) \
+			debian/share/inittab.$(DEB_HOST_GNU_SYSTEM) \
+			$(sysvtmp)/usr/share/sysvinit/inittab ; \
+	else \
+		$(INSTALL_DATA) debian/share/inittab \
+			$(sysvtmp)/usr/share/sysvinit/inittab ; \
+	fi
+
+	# initscripts package may include /sys
+ifneq (,$(findstring $(DEB_HOST_ARCH_OS),linux kfreebsd))
+	$(INSTALL) -d $(inittmp)/sys
+endif
+
+ifeq ($(derives_from_ubuntu),yes)
+ifneq (,$(findstring sysvinit-utils, $(shell dh_listpackages)))
+	cp -p debian/src/lsb-base/init-functions.d/50-ubuntu-logging \
+		debian/sysvinit-utils/lib/lsb/init-functions.d/
+endif
+endif
+
+install-arch: build-arch
+	dh $@ $(DH_OPTIONS)
+
+override_dh_installchangelogs-arch:
+	dh_installchangelogs -psysvinit-core doc/Changelog
+	dh_installchangelogs -psysvinit-utils --exclude doc/Changelog
+	dh_installchangelogs -pbootlogd
+
+override_dh_installchangelogs-indep:
+	dh_installchangelogs
+
+override_dh_installdeb:
+	dh_installdeb
+
+ifeq ($(DEB_HOST_ARCH_OS), hurd)
+	# The Hurd has its own halt and reboot commands.
+	mv $(sysvtmp)/usr/share/man/man8/halt.8.gz $(sysvtmp)/usr/share/man/man8/halt-sysv.8.gz
+	rm $(sysvtmp)/usr/share/man/man8/reboot.8.gz
+	ln -s halt-sysv.8.gz $(sysvtmp)/usr/share/man/man8/reboot-sysv.8.gz
+	rm $(sysvtmp)/usr/share/man/man8/poweroff.8.gz
+	ln -s halt-sysv.8.gz $(sysvtmp)/usr/share/man/man8/poweroff-sysv.8.gz
+	mv $(sysvtmp)/usr/sbin/halt $(sysvtmp)/usr/sbin/halt-sysv
+	rm $(sysvtmp)/usr/sbin/reboot
+	ln -s halt-sysv $(sysvtmp)/usr/sbin/reboot-sysv
+	rm $(sysvtmp)/usr/sbin/poweroff
+	ln -s halt-sysv $(sysvtmp)/usr/sbin/poweroff-sysv
+endif
+
+override_dh_clean:
+	dh_clean
+	$(MAKE) -C src clobber
+
+.PHONY: override_dh_auto_build override_dh_auto_install-arch override_dh_auto_install-indep override_dh_installchangelogs-arch override_dh_installchangelogs-indep override_dh_installdeb-arch override_dh_installdeb-indep override_dh_clean install-arch

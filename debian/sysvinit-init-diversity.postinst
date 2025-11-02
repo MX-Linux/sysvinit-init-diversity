@@ -1,0 +1,102 @@
+#!/bin/sh
+# postinst script for sysvinit-init-diversity init
+#
+# see: dh_installdeb(1)
+
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <postinst> `abort-remove'
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+
+set -e
+
+# Restart init.
+do_restart() {
+	# Tell init to re-exec itself.
+	echo -n "sysvinit: restarting..."
+	if init u; then
+		echo " done."
+	else
+		echo " failed."
+	fi
+}
+
+umask 022
+
+case "$1" in
+	configure)
+	
+	# convert /sbin/init-sysvinit to a relative symlink
+		if test -L /usr/sbin/init-sysvinit; then
+			echo "Converting init-sysvinit symlink to relative"
+			ln --force --symbolic --relative "$(readlink --canonicalize /usr/sbin/init-sysvinit)" /usr/sbin/init-sysvinit
+		fi
+		# new init will need to be added to the GRUB menu
+		if mountpoint -q /live/aufs; then
+				echo "Live/Frugal system detected - Not updating GRUB"
+				exit 0
+		elif [ "$(stat -c %d/%i /)" != "$(stat -Lc %d/%i /proc/1/root 2>/dev/null)" ]; then
+				echo "A chroot environment has been detected - Not updating GRUB"
+				exit 0
+		else
+				echo "Updating GRUB to reveal the updated init entry"
+				update-grub
+		fi
+		
+		if [ -z "$2" ]; then
+			# New installation
+			skip_restart=1
+		fi
+
+		rm -f "$DPKG_ROOT/etc/ioctl.save"
+
+		if [ ! -f "$DPKG_ROOT/etc/inittab" ]; then
+			cp -p "$DPKG_ROOT/usr/lib/sysvinit/inittab" "$DPKG_ROOT/etc/inittab"
+		fi
+		;;
+	triggered)
+		# Restart, if possible
+		# new init will need to be added to the GRUB menu
+		if mountpoint -q /live/aufs; then
+		echo "Live/Frugal system detected - Not updating GRUB"
+		exit 0		
+		else
+		echo "Updating GRUB to reveal the updated init entry"
+		update-grub
+		fi
+		;;
+	abort-upgrade | abort-remove | abort-deconfigure)
+		exit 0
+		;;
+	*)
+		echo "postinst called with unknown argument \`$1'" >&2
+		exit 1
+		;;
+esac
+
+if ischroot --default-true ||
+	[ -n "${DPKG_ROOT:-}" ] ||
+	[ -d "/run/systemd/system" ] ||
+	[ ! -p "/run/initctl" ] ||
+	[ "$(uname -s)" = "GNU" ]; then
+	skip_restart=1
+fi
+
+if [ "$skip_restart" ]; then
+	echo "Not restarting sysvinit"
+else
+	do_restart
+fi
+
+#DEBHELPER#
+
+exit 0
+
+    

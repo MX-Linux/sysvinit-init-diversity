@@ -1,0 +1,2 @@
+debian/src/sysv-rc/rc  /usr/lib/init
+debian/src/sysv-rc/rcS /usr/lib/init

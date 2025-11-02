@@ -1,0 +1,161 @@
+#! /bin/sh
+#
+# initscripts postinst
+#
+
+set -e
+
+. "$DPKG_ROOT/lib/init/vars.sh"
+. "$DPKG_ROOT/lib/init/tmpfs.sh"
+. "$DPKG_ROOT/lib/init/mount-functions.sh"
+
+case "$1" in
+  configure)
+	PREV_VER=$2
+	;;
+  triggered)
+	if [ ! -d /run/systemd/system ]; then
+		for trigger in "$2" ; do
+			case "$trigger" in
+			    */lib/systemd/system/udev.service)
+				if [ ! -e "$trigger" ]; then
+					invoke-rc.d udev stop
+				elif [ ! -e "/run/udev" ]; then
+					invoke-rc.d udev start
+				else
+					invoke-rc.d udev reload
+				fi
+				;;
+			esac
+		done
+	fi
+	exit 0
+	;;
+  abort-upgrade|abort-remove|abort-deconfigure)
+	exit 0
+	;;
+esac
+
+umask 022
+
+INITSCRIPTS="mountkernfs.sh mount-configfs brightness hostname.sh mountdevsubfs.sh checkroot.sh \
+	checkroot-bootclean.sh checkfs.sh mountall.sh mountall-bootclean.sh \
+	mountnfs.sh mountnfs-bootclean.sh bootmisc.sh urandom halt reboot \
+	udev umountroot umountfs umountnfs.sh sendsigs killprocs single motd \
+	bootlogs rc.local rmnologin hwclock.sh kmod"
+
+for F in $INITSCRIPTS; do
+	if [ -x "$DPKG_ROOT/etc/init.d/$F" ]; then
+		update-rc.d $F defaults >/dev/null || exit $?
+	fi
+done
+
+mkdir -p "$DPKG_ROOT/etc/systemd/system"
+for F in $INITSCRIPTS; do
+	SERVICE="$(basename $F .sh).service"
+	if [ -x "$DPKG_ROOT/etc/init.d/$F" ] && [ ! -e "$DPKG_ROOT/etc/systemd/system/$SERVICE" ]; then
+		ln -s /dev/null "$DPKG_ROOT/etc/systemd/system/$SERVICE"
+	fi
+done
+
+#
+# Remove scripts that were left behind by older glibc (<< 2.3.2.ds1-12)
+# versions. We have the same functionality in mount{kern,devsub}fs.sh
+#
+#
+# In 2.86.ds1-10 the "mountvirtfs" script was replaced by
+# mountkernfs.sh and mountdevsubfs.sh.  It was removed completely in
+# 2.86.ds1-16.
+#
+for F in mountkernfs devpts.sh mountvirtfs
+do
+	rm -f /etc/init.d/$F
+	update-rc.d $F remove >/dev/null
+done
+
+#
+# Create initial log files
+#
+[ "$PREV_VER" ] || chmod 755 "$DPKG_ROOT/var/log/fsck" || :
+for F in "$DPKG_ROOT/var/log/fsck/checkroot" "$DPKG_ROOT/var/log/fsck/checkfs"
+do
+	if [ ! -f "$F" ] && touch "$F" >/dev/null 2>&1
+	then
+		echo "(Nothing has been logged yet.)" >| "$F"
+		chown root:adm "$F"
+		chmod 640 "$F"
+	fi
+done
+
+#
+# Create /dev/pts, /dev/shm directories
+#
+# The 'mountpoint -q /dev' assumes that the system providing /dev is the same
+# system that this package is installed to. This check thus only makes sense
+# if "$DPKG_ROOT" is empty.
+# Checking "$DPKG_ROOT" for being empty also makes sure that "uname -s" is not
+# called in chrootless mode, where the uname output of the outer system does
+# not necessarily correspond to the kernel of the targeted system.
+if [ -z "$DPKG_ROOT" ] && [ "$(uname -s)" = Linux ]
+then
+	#
+	# Only create /dev/{pts,shm} if /dev is on the
+	# root file system. If some package has mounted a
+	# seperate /dev (ramfs from udev, devfs) it is
+	# responsible for the presence of those subdirs.
+	# (it is OK for these to fail under fakechroot)
+	#
+	if ! mountpoint -q /dev
+	then
+		[ -d /dev/pts ] || { mkdir --mode=755 /dev/pts ; chown root:root /dev/pts || [ "$FAKECHROOT" = true ]; }
+		[ -d /dev/shm ] || { mkdir --mode=755 /dev/shm ; chown root:root /dev/shm || [ "$FAKECHROOT" = true ]; }
+	fi
+fi
+
+#
+# Install runsystem.sysv on Hurd.
+#
+# This block is hurd-specific. Run it based on the output of "uname -s" if
+# $DPKG_ROOT is empty (the normal case). Run it based on there being an
+# alternative called 'runsystem' managing the link /etc/hurd/runsystem if
+# $DPKG_ROOT is not empty (for chrootless installations).
+if { [ -z "$DPKG_ROOT" ] && [ "$(uname -s)" = GNU ]; } \
+	|| { [ -n "$DPKG_ROOT" ] && update-alternatives --query runsystem 2>/dev/null | grep --quiet '^Link: /etc/hurd/runsystem$'; }
+then
+	get_runsystem() {
+	    update-alternatives --query runsystem \
+		| sed -n -e '/^Value:/s|.*\.||p'
+	}
+
+	current="$(get_runsystem)"
+	update-alternatives --quiet \
+		--install /etc/hurd/runsystem runsystem \
+		/etc/hurd/runsystem.sysv 10 \
+		--slave /sbin/halt halt /sbin/halt-sysv \
+		--slave /sbin/poweroff poweroff /sbin/poweroff-sysv \
+		--slave /sbin/reboot reboot /sbin/reboot-sysv
+	new="$(get_runsystem)"
+
+	if [ "$current" != "$new" ]; then
+	    echo "Switching from runsystem.$current to runsystem.$new."
+	    echo
+	fi
+
+	echo "You can use update-alternatives --config runsystem to select"
+	echo "the runsystem to use."
+	echo
+	echo "You must use halt-hurd or reboot-hurd to halt or reboot the"
+	echo "system whenever you change the runsystem."
+fi
+
+# Ensure we have a random seed on first boot.
+if [ "$PREV_VER" = "" ]; then
+	if which invoke-rc.d >/dev/null 2>&1
+	then
+		invoke-rc.d urandom start || true
+	else
+		/etc/init.d/urandom start || true
+	fi
+fi
+
+#DEBHELPER#

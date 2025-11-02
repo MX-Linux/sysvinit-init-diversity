@@ -1,0 +1,7 @@
+lib/sysvinit/halt lib/sysvinit/poweroff
+lib/sysvinit/halt lib/sysvinit/reboot
+lib/sysvinit/init lib/sysvinit/telinit
+
+lib/sysvinit/init sbin/init-sysvinit
+lib/sysvinit/halt sbin/halt
+lib/sysvinit/telinit sbin/telinit

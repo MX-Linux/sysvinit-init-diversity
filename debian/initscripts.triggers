@@ -1,0 +1,2 @@
+interest-await /lib/systemd/system/udev.service
+interest-await /usr/lib/systemd/system/udev.service

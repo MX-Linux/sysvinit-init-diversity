@@ -1,0 +1,5 @@
+sbin/halt usr/sbin
+sbin/init usr/sbin
+sbin/runlevel usr/sbin
+sbin/shutdown usr/sbin
+usr/include/initreq.h

@@ -1,0 +1,9 @@
+debian/init-d-script usr/lib/init
+debian/vars.sh usr/lib/init
+sbin/fstab-decode usr/sbin
+sbin/killall5 usr/sbin
+usr/share/man/man8/fstab-decode.8
+usr/share/man/man8/killall5.8
+usr/share/man/man8/pidof.8
+debian/src/lsb-base/init-functions usr/lib/lsb
+debian/src/lsb-base/init-functions.d/00-verbose usr/lib/lsb/init-functions.d

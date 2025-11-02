@@ -1,0 +1,3 @@
+usr/sbin/halt usr/sbin/poweroff
+usr/sbin/halt usr/sbin/reboot
+usr/sbin/init usr/sbin/telinit

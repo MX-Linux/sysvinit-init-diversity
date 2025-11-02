@@ -1,0 +1,6 @@
+sbin/halt usr/lib/sysvinit
+sbin/init usr/lib/sysvinit
+sbin/runlevel usr/lib/sysvinit
+sbin/shutdown usr/lib/sysvinit
+usr/include/initreq.h usr/lib/sysvinit
+debian/share/inittab usr/lib/sysvinit

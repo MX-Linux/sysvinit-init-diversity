@@ -1,0 +1,11 @@
+sysvinit-core (3.14-2) experimental; urgency=medium
+
+  * To avoid avoid apt(8) inadvertently switching init system, the
+    'Protected: yes' field (see deb-control(5)) has been added. If you
+    intentionally want to change init-system, explicitly request removal
+    of sysvinit-core and use --allow-remove-essential. For example:
+
+      apt install --allow-remove-essential runit-init sysvinit-core-
+
+ -- Mark Hindley <leepen@debian.org>  Mon, 24 Feb 2025 09:18:00 +0000
+
