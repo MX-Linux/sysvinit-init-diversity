@@ -154,7 +154,6 @@ Replaces:
  sysvinit (<< 2.88dsf-44~),
 Breaks:
  lib-sysvinit-init,
-Provides:  sysvinit-core
 Description: System-V-like init
  This package allows sysvinit to co-exist with other init systems in a
  Debian system allowing the user to choose which init to boot.

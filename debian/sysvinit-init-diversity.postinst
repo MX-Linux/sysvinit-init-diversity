@@ -32,7 +32,10 @@ umask 022
 
 case "$1" in
 	configure)
-	
+	# set init link if not present
+	if [ ! -e "/usr/sbin/init" ]; then
+		ln -s /usr/lib/sysvinit/init /usr/sbin/init
+	fi
 	# convert /sbin/init-sysvinit to a relative symlink
 		if test -L /usr/sbin/init-sysvinit; then
 			echo "Converting init-sysvinit symlink to relative"
