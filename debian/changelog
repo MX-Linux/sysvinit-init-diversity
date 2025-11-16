@@ -1,12 +1,31 @@
-sysvinit (3.14-4~mx25) mx; urgency=medium
-  
-  [ProwlerGr]
+sysvinit (3.14-4.0experimental6) UNRELEASED; urgency=medium
+
+  * bootlogd | plymouth moved to recommends, thanks @Dolpin_Oracle
+
+ -- ProwlerGr <Prowler73@gmail.com>  Fri, 14 Nov 2025 22:33:22 +1000
+
+sysvinit (3.14-4.0experimental5) UNRELEASED; urgency=medium
+
+  * postrm updated to ensure another primary init exists on removal
+  * postinst updated to ensure init-diversity wrappers are used
+  * plymouth added as alternative dependency to bootlogd (for MX)
+  * grub-files-mx added as alternative dependency to grub-init-diversity (for MX)
+
+ -- ProwlerGr <Prowler73@gmail.com>  Fri, 14 Nov 2025 22:22:22 +1000
+ 
+sysvinit (3.14-4.0experimental4) UNRELEASED; urgency=medium
+
+  * prerm to exit with code "1" if sysvinit is detected as PID 1
+  * Install under /sbin/init if primary init missing or link broken
+
+ -- ProwlerGr <Prowler73@gmail.com>  Thu, 13 Nov 2025 22:22:22 +1000
+
+sysvinit (3.14-4.0experimental3) unstable; urgency=medium
+
   * sysvinit-init-diversity now assumes sysvinit-core is not installed.
   * inittab & halt & telinit deployment also handled by sysvinit-init-diversity
-  [dolphin oracle]
-  * adjustments for mx linux
 
- -- Dolphin Oracle <dolphinoracle@gmail.com>  Sun, 02 Nov 2025 14:46:50 -0500
+ -- ProwlerGr <Prowler73@gmail.com>  Thu, 16 Oct 2025 22:22:22 +1000
 
 sysvinit (3.14-4.0experimental2) UNRELEASED; urgency=medium
 

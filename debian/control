@@ -135,11 +135,13 @@ Depends:
  sysv-rc | openrc,
  sysvinit-utils | sysvinit-utils-antix,
  init-diversity-tools,
+ grub-init-diversity | grub-files-mx,
  mount [linux-any],
  ${misc:Depends},
  ${shlibs:Depends},
 Recommends:
  orphan-sysvinit-scripts,
+ bootlogd | plymouth,
  runit-init-diversity,
  openrc-init-diversity,
  s6-rc-init-diversity,

@@ -32,16 +32,50 @@ umask 022
 
 case "$1" in
 	configure)
-	# set init link if not present
-	if [ ! -e "/usr/sbin/init" ]; then
-		ln -s /usr/lib/sysvinit/init /usr/sbin/init
-	fi
+	
 	# convert /sbin/init-sysvinit to a relative symlink
 		if test -L /usr/sbin/init-sysvinit; then
 			echo "Converting init-sysvinit symlink to relative"
 			ln --force --symbolic --relative "$(readlink --canonicalize /usr/sbin/init-sysvinit)" /usr/sbin/init-sysvinit
 		fi
-		# new init will need to be added to the GRUB menu
+	# link to /sbin/init if a primary init is missing or link broken
+		if [ ! -e /usr/sbin/init ]; then
+		echo "Installing sysvinit under '/sbin/init' as primary init"
+			rm -rf /usr/sbin/init && ln -sf /usr/lib/sysvinit/init /usr/sbin/init
+		echo "Converting init symlink to relative"
+			ln --force --symbolic --relative "$(readlink --canonicalize /usr/sbin/init)" /usr/sbin/init
+		fi
+	# postinst script to replace poweroff
+		if test -e /usr/lib/init-diversity/poweroff.sh; then
+		echo "Reinstating multi-init poweroff function"
+			ln -sf /usr/lib/init-diversity/poweroff.sh /usr/sbin/poweroff
+		fi
+	# postinst script to replace reboot
+		if test -e /usr/lib/init-diversity/reboot.sh; then
+		echo "Reinstating multi-init reboot function"
+			ln -sf /usr/lib/init-diversity/reboot.sh /usr/sbin/reboot
+		fi
+	# postinst script to replace shutdown
+		if test -e /usr/lib/init-diversity/shutdown.sh; then
+		echo "Reinstating multi-init shutdown function"
+			ln -sf /usr/lib/init-diversity/shutdown.sh /usr/sbin/shutdown
+		fi
+	# postinst script to replace runlevel
+		if test -e /usr/lib/init-diversity/runlevel.sh; then
+		echo "Reinstating multi-init runlevel function"
+			ln -sf /usr/lib/init-diversity/runlevel.sh /usr/sbin/runlevel
+		fi
+	# postinst script to replace rc - mainly for sysvinit & OpenRC
+		if [ -e /usr/lib/init-diversity/rc.sh ] && [ -d /etc/init.d/ ]; then
+		echo "Reinstating multi-init rc function"
+			ln -sf /usr/lib/init-diversity/rc.sh /etc/init.d/rc
+		fi
+	# postinst script to replace rcS - mainly for sysvinit & OpenRC
+		if [ -e /usr/lib/init-diversity/rcS.sh ] && [ -d /etc/init.d/ ]; then
+		echo "Reinstating multi-init rcS function"
+			ln -sf /usr/lib/init-diversity/rcS.sh /etc/init.d/rcS
+		fi
+	# new init will need to be added to the GRUB menu
 		if mountpoint -q /live/aufs; then
 				echo "Live/Frugal system detected - Not updating GRUB"
 				exit 0

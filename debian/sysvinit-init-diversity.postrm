@@ -20,6 +20,51 @@ if test -e /usr/lib/init-diversity/shutdown.sh; then
 	ln -sf /usr/lib/init-diversity/shutdown.sh /usr/sbin/shutdown
 fi
 
+if test -e /usr/lib/init-diversity/runlevel.sh; then
+	echo "Reinstating multi-init runlevel function"
+	ln -sf /usr/lib/init-diversity/runlevel.sh /usr/sbin/runlevel
+fi
+
+if [ -e /usr/lib/init-diversity/rc.sh ] && [ -d /etc/init.d/ ]; then
+	echo "Reinstating multi-init rc function"
+	ln -sf /usr/lib/init-diversity/rc.sh /etc/init.d/rc
+fi
+
+if [ -e /usr/lib/init-diversity/rcS.sh ] && [ -d /etc/init.d/ ]; then
+	echo "Reinstating multi-init rcS function"
+	ln -sf /usr/lib/init-diversity/rcS.sh /etc/init.d/rcS
+fi
+
+# Ensure a primary init exists otherwise make another existing init primary
+if [ ! -e /sbin/init ]; then
+	echo "Primary init is missing - searching for available inits"
+		if [ -x /lib/sysvinit/init ]; then
+			echo "Found sysvinit - linking to /sbin/init"
+			rm -rf /sbin/init && ln -sf /lib/sysvinit/init /sbin/init
+		elif [ -x /lib/systemd/systemd ]; then
+			echo "Found systemd - linking to /sbin/init"
+			rm -rf /sbin/init && ln -sf /lib/systemd/systemd /sbin/init
+		elif [ -x /lib/s6-66/s6-66-init ]; then
+			echo "Found s6-66-init - linking to /sbin/init"
+			rm -rf /sbin/init && ln -sf /lib/s6-66/s6-66-init /sbin/init
+		elif [ -x /lib/s6-rc/s6-rc-init ]; then
+			echo "Found s6-rc-init - linking to /sbin/init"
+			rm -rf /sbin/init && ln -sf /lib/s6-rc/s6-rc-init /sbin/init
+		elif [ -x /lib/dinit/dinit ]; then
+			echo "Found dinit - linking to /sbin/init"
+			rm -rf /sbin/init && ln -sf /lib/dinit/dinit /sbin/init
+		elif [ -x /lib/runit/runit-init ]; then
+			echo "Found runit-init - linking to /sbin/init"
+			rm -rf /sbin/init && ln -sf /lib/runit/runit-init /sbin/init
+		elif [ -x /lib/openrc/openrc-init ]; then
+			echo "Found openrc-init - linking to /sbin/init"
+			rm -rf /sbin/init && ln -sf /lib/openrc/openrc-init /sbin/init
+		else 
+			echo "Couldn't find suitable init under /lib - linking /sbin/init to busybox"
+			rm -rf /sbin/init && ln -sf /sbin/busybox /sbin/init
+		fi
+fi
+
 # Removed inits will need to be removed from the GRUB menu
 if mountpoint -q /live/aufs; then
 	echo "Live/Frugal system detected - Not updating GRUB"
