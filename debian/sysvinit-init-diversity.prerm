@@ -1,0 +1,24 @@
+#! /bin/sh
+#
+# sysvinit-init-diversity prerm
+#
+
+set -e
+
+case "$1" in
+		remove|purge)
+			# Exit with error code if sysvinit is detected as PID 1
+			if ( [ $(cat /proc/cmdline | grep -ic "init=/") -eq 0 ] && [ $(readlink -e /sbin/init | grep -ic "sysvinit") -eq 1 ] ) || [ $(cat /proc/cmdline | grep -ic "sysvinit") -eq 1 ]; then
+				echo "sysvinit has been detected as the running init - stopping here"
+				exit 1
+			fi
+		;;	
+		
+		*) : 
+		;;
+esac
+
+
+#DEBHELPER#
+
+exit 0
