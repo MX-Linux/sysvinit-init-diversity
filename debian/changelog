@@ -1,8 +1,12 @@
-sysvinit (3.14-4.0experimental7) UNRELEASED; urgency=medium
+sysvinit (3.14-4.0experimental7.1~mx25) mx; urgency=medium
 
+  [ ProwlerGr ]
   * prerm updated to allow removal when booted with sysvinit-core
   
-  -- ProwlerGr <Prowler73@gmail.com>  Mon, 17 Nov 2025 22:33:22 +1000
+  [ Dolphin Oracle ]
+  * mx versioning
+
+ -- Dolphin Oracle <dolphinoracle@gmail.com>  Sun, 30 Nov 2025 16:32:25 -0500
 
 sysvinit (3.14-4.0experimental6) UNRELEASED; urgency=medium
 
