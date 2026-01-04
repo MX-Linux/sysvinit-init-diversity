@@ -100,14 +100,6 @@ case "$1" in
 		;;
 	triggered)
 		# Restart, if possible
-		# new init will need to be added to the GRUB menu
-		if mountpoint -q /live/aufs; then
-		echo "Live/Frugal system detected - Not updating GRUB"
-		exit 0		
-		else
-		echo "Updating GRUB to reveal the updated init entry"
-		update-grub
-		fi
 		;;
 	abort-upgrade | abort-remove | abort-deconfigure)
 		exit 0
