@@ -1,3 +1,9 @@
+sysvinit (3.14-4.0~mx25) mx; urgency=medium
+
+  * adjust versioning 
+
+ -- Dolphin Oracle <dolphinoracle@gmail.com>  Sat, 03 Jan 2026 19:06:39 -0500
+
 sysvinit (3.14-4.0experimental7.1~mx25) mx; urgency=medium
 
   [ ProwlerGr ]
