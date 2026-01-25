@@ -1,3 +1,9 @@
+sysvinit (3.14-4~mx25u2) mx; urgency=medium
+
+  * set up dpkg-diverts to match sysvinit-core
+
+ -- Dolphin Oracle <dolphinoracle@gmail.com>  Sun, 25 Jan 2026 11:35:02 -0500
+
 sysvinit (3.14-4~mx25u1) mx; urgency=medium
 
   * revert postinstall script grub update to match sysvinit-core
