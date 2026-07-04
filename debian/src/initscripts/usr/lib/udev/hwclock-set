@@ -4,8 +4,8 @@
 
 dev=$1
 
-if [ -e /run/systemd/system ] ; then
-    exit 0
+if [ -e /run/systemd/system ]; then
+	exit 0
 fi
 
 /sbin/hwclock --rtc=$dev --systz

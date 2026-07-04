@@ -11,7 +11,7 @@ Bug-Debian: http://bugs.debian.org/660862
 
 --- a/man/shutdown.8
 +++ b/man/shutdown.8
-@@ -147,7 +147,7 @@
+@@ -154,7 +154,7 @@
  The word \fBnow\fP is an alias for \fB+0\fP.
  .PP
  If \fBshutdown\fP is called with a delay, it will create the advisory file

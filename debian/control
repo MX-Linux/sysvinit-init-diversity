@@ -11,11 +11,10 @@ Uploaders:
 Build-Depends:
  debhelper-compat (= 13),
  libcrypt-dev,
- libselinux1-dev [linux-any],
+ libselinux-dev [linux-any],
  po4a,
-Rules-Requires-Root: no
-Standards-Version: 4.7.2
-Homepage: https://github.com/slicer69/sysvinit
+Standards-Version: 4.7.4
+Homepage: https://codeberg.org/thejessesmith/sysvinit
 Vcs-Git: https://salsa.debian.org/debian/sysvinit.git
 Vcs-Browser: https://salsa.debian.org/debian/sysvinit
 
@@ -27,6 +26,7 @@ Depends:
  sysv-rc | file-rc | openrc,
  sysvinit-utils | sysvinit-utils-antix,
  mount [linux-any],
+ login,
  ${misc:Depends},
  ${shlibs:Depends},
 Conflicts:

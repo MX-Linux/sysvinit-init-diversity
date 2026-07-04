@@ -24,29 +24,29 @@ DAEMON=/sbin/bootlogd
 [ -d /run/systemd/system ] && exit 0
 
 case "$1" in
-  start)
-	single=false
-	for word in $(cat /proc/cmdline); do
-		case "$word" in
-		S|single|1)
-			single=true
+	start)
+		single=false
+		for word in $(cat /proc/cmdline); do
+			case "$word" in
+				S | single | 1)
+					single=true
+					;;
+			esac
+		done
+		if [ true = "$single" ]; then
+			/etc/init.d/bootlogd stop
+		fi
 		;;
-		esac
-	done
-	if [ true = "$single" ] ; then
-		/etc/init.d/bootlogd stop
-	fi
-	;;
-  stop|restart|force-reload)
-	# No-op
-	;;
-  status)
-	exec /etc/init.d/bootlogd status
-	;;
-  *)
-	echo "Usage: $NAME {start|stop|restart|force-reload}" >&2
-	exit 3
-	;;
+	stop | restart | force-reload)
+		# No-op
+		;;
+	status)
+		exec /etc/init.d/bootlogd status
+		;;
+	*)
+		echo "Usage: $NAME {start|stop|restart|force-reload}" >&2
+		exit 3
+		;;
 esac
 
 :

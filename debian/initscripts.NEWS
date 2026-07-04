@@ -1,0 +1,7 @@
+initscripts (3.15-3) experimental; urgency=medium
+
+  * Use of /forcefsck and the forcefsck kernel cmdline option is now
+    DEPRECATED. It only worked on ext[2,3,4] filesystems. Admins should use the
+    '-E force_fsck' flag of tune2fs(8) instead.
+
+ -- Mark Hindley <leepen@debian.org>  Wed, 24 Sep 2025 20:29:29 +0100

@@ -130,8 +130,10 @@ will override the RAMTMP setting.
 
 .PP
 The following options configure size limits for tmpfs mounts.  Note
-that the addition of an entry to /etc/fstab will override any of the
-limits specified here.
+that the presence of an entry in /etc/fstab will override all of the
+limits specified here in respect of that mountpoint. Either configure
+a particular tmpfs mountpoint in /etc/fstab or /etc/default/tmpfs,
+but not both.
 .PP
 The following _SIZE variables are the maximum size (in bytes) that
 tmpfs filesystems can use.  The size will be rounded down to a

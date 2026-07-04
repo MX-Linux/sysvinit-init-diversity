@@ -15,15 +15,15 @@ PATH=/usr/sbin:/usr/bin:/sbin:/bin
 . /lib/lsb/init-functions
 . /lib/init/vars.sh
 
-do_start () {
+do_start() {
 	#
 	# If login delaying is enabled then create the flag file
 	# which prevents logins before startup is complete
 	#
 	case "$DELAYLOGIN" in
-	  Y*|y*)
-		echo "System bootup in progress - please wait" > /run/nologin
-		;;
+		Y* | y*)
+			echo "System bootup in progress - please wait" >/run/nologin
+			;;
 	esac
 
 	# Remove bootclean's flag files.
@@ -32,9 +32,9 @@ do_start () {
 	rm -f /tmp/.tmpfs /run/.tmpfs /run/lock/.tmpfs
 
 	readonly utmp='/var/run/utmp'
-	if > "${utmp}" ; then
+	if >"${utmp}"; then
 		chgrp utmp "${utmp}" || log_warning_msg "failed to chgrp ${utmp}"
-		chmod 664  "${utmp}" || log_warning_msg "failed to chmod ${utmp}"
+		chmod 664 "${utmp}" || log_warning_msg "failed to chmod ${utmp}"
 		[ -x /sbin/restorecon ] && /sbin/restorecon "${utmp}"
 		return 0
 	else
@@ -44,20 +44,20 @@ do_start () {
 }
 
 case "$1" in
-  start|"")
-	do_start
-	;;
-  restart|reload|force-reload)
-	echo "Error: argument '$1' not supported" >&2
-	exit 3
-	;;
-  stop|status)
-	# No-op
-	;;
-  *)
-	echo "Usage: bootmisc.sh [start|stop]" >&2
-	exit 3
-	;;
+	start | "")
+		do_start
+		;;
+	restart | reload | force-reload)
+		echo "Error: argument '$1' not supported" >&2
+		exit 3
+		;;
+	stop | status)
+		# No-op
+		;;
+	*)
+		echo "Usage: bootmisc.sh [start|stop]" >&2
+		exit 3
+		;;
 esac
 
 :

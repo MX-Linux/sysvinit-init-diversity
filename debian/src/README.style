@@ -1,0 +1,22 @@
+Shell script style
+==================
+
+Scripts should follow the style produced by shfmt(1) utilising the -ci and -s options. That is
+
+ - tab indented
+ 
+ - case indented
+ 
+ - ';' rather than a newline between conditional test and 'then'
+
+ - no space before redirection operators
+
+In addition:-
+
+ - wrap at 80 columns
+
+ - prefer '[ ]' to test(1) or test builtin
+
+ - avoid obsolete [ x"$VARIABLE" = x"value" ]
+
+ - consider using init-d-script(5)

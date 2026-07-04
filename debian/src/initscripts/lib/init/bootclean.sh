@@ -10,51 +10,57 @@
 . /lib/lsb/init-functions
 
 # Should be called outside verbose message block
-mkflagfile()
-{
+mkflagfile() {
 	# Prevent symlink attack  (See #264234.)
 	[ -L "$1" ] && log_warning_msg "bootclean: Deleting symbolic link '$1'."
-	rm -f "$1" || { log_failure_msg "bootclean: Failure deleting '$1'." ; return 1 ; }
+	rm -f "$1" || {
+		log_failure_msg "bootclean: Failure deleting '$1'."
+		return 1
+	}
 	# No user processes should be running, so no one should be
 	# able to introduce a symlink here.  As an extra precaution,
 	# set noclobber.
 	set -o noclobber
-	true > "$1" || { log_failure_msg "bootclean: Failure creating '$1'." ; return 1 ; }
+	true >"$1" || {
+		log_failure_msg "bootclean: Failure creating '$1'."
+		return 1
+	}
 	return 0
 }
 
-checkflagfile()
-{
-	if [ -f $1/.clean ]
-	then
+checkflagfile() {
+	if [ -f $1/.clean ]; then
 		which stat >/dev/null 2>&1 && cleanuid="$(stat -c %u $1/.clean)"
 		# Poor's man stat %u, since stat (and /usr) might not
 		# be available in some bootup stages
 		[ "$cleanuid" ] || cleanuid="$(find $1/.clean -printf %U)"
-		[ "$cleanuid" ] || { log_failure_msg "bootclean: Could not stat '$1/.clean'." ; return 1 ; }
-		if [ "$cleanuid" -ne 0 ]
-		then
-			rm -f $1/.clean || { log_failure_msg "bootclean: Could not delete '$1/.clean'." ; return 1 ; }
+		[ "$cleanuid" ] || {
+			log_failure_msg "bootclean: Could not stat '$1/.clean'."
+			return 1
+		}
+		if [ "$cleanuid" -ne 0 ]; then
+			rm -f $1/.clean || {
+				log_failure_msg "bootclean: Could not delete '$1/.clean'."
+				return 1
+			}
 		fi
 	fi
 	return 0
 }
 
-	report_err()
-	{
-		dir="$1"
-		if [ "$VERBOSE" = no ]
-		then
-			log_failure_msg "bootclean: Failure cleaning ${dir}."
-		else
-			log_action_end_msg 1 "bootclean: Failure cleaning ${dir}"
-		fi
-	}
+report_err() {
+	dir="$1"
+	if [ "$VERBOSE" = no ]; then
+		log_failure_msg "bootclean: Failure cleaning ${dir}."
+	else
+		log_action_end_msg 1 "bootclean: Failure cleaning ${dir}"
+	fi
+}
 
 clean_tmp() {
-	if test -h /tmp; then
+	if [ -h /tmp ]; then
 		# will be created by mount_tmp if it does not exist
-		test -d /tmp || return 0
+		[ -d /tmp ] || return 0
 		# but we'll clean it if it does
 	fi
 
@@ -71,7 +77,10 @@ clean_tmp() {
 	# Can't clean yet?
 	which find >/dev/null 2>&1 || return 1
 
-	cd /tmp || { log_failure_msg "bootclean: Could not cd to /tmp." ; return 1 ; }
+	cd /tmp || {
+		log_failure_msg "bootclean: Could not cd to /tmp."
+		return 1
+	}
 
 	#
 	# Only clean out /tmp if it is world-writable. This ensures
@@ -79,8 +88,7 @@ clean_tmp() {
 	#
 	[ "$(find . -maxdepth 0 -perm -002)" = "." ] || return 0
 
-	if [ ! "$TMPTIME" ]
-	then
+	if [ ! "$TMPTIME" ]; then
 		log_warning_msg "Using default TMPTIME 0."
 		TMPTIME=0
 	fi
@@ -96,10 +104,10 @@ clean_tmp() {
 	# Don't clean remaining files if TMPTIME is negative or 'infinite'
 	#
 	case "$TMPTIME" in
-	  -*|infinite|infinity)
-		[ "$VERBOSE" = no ] || log_action_end_msg 0 "skipped"
-		return 0
-		;;
+		-* | infinite | infinity)
+			[ "$VERBOSE" = no ] || log_action_end_msg 0 "skipped"
+			return 0
+			;;
 	esac
 
 	#
@@ -109,8 +117,7 @@ clean_tmp() {
 	# at all, so we can also delete files with timestamps
 	# in the future!
 	#
-	if [ "$TMPTIME" = 0 ]
-	then
+	if [ "$TMPTIME" = 0 ]; then
 		TEXPR=""
 		DEXPR=""
 	else
@@ -134,14 +141,20 @@ clean_tmp() {
 	#
 	# First remove all old files...
 	#
-	find . -depth -xdev $TEXPR $EXCEPT ! -type d -delete \
-		|| { report_err "/tmp"; return 1 ; }
+	find . -depth -xdev $TEXPR $EXCEPT ! -type d -delete ||
+		{
+			report_err "/tmp"
+			return 1
+		}
 
 	#
 	# ...and then all empty directories
 	#
-	find . -depth -xdev $DEXPR $EXCEPT -type d -empty -delete \
-		|| { report_err "/tmp"; return 1 ; }
+	find . -depth -xdev $DEXPR $EXCEPT -type d -empty -delete ||
+		{
+			report_err "/tmp"
+			return 1
+		}
 
 	[ "$VERBOSE" = no ] || log_action_end_msg 0
 	log_progress_msg "/tmp"
@@ -165,20 +178,25 @@ clean() {
 	# Can't clean yet?
 	which find >/dev/null 2>&1 || return 1
 
-	cd "$dir" || { log_action_end_msg 1 "bootclean: Could not cd to ${dir}." ; return 1 ; }
+	cd "$dir" || {
+		log_action_end_msg 1 "bootclean: Could not cd to ${dir}."
+		return 1
+	}
 
 	[ "$VERBOSE" = no ] || log_action_begin_msg "Cleaning $dir"
 
-	find . $findopts -delete \
-		|| { report_err "$dir"; return 1 ; }
+	find . $findopts -delete ||
+		{
+			report_err "$dir"
+			return 1
+		}
 	[ "$VERBOSE" = no ] || log_action_end_msg 0
 	mkflagfile "${dir}/.clean" || return 1
 	log_progress_msg "$dir"
 	return 0
 }
 
-clean_all()
-{
+clean_all() {
 	which find >/dev/null 2>&1 || return 0
 	log_begin_msg "Cleaning up temporary files..."
 	ES=0
@@ -189,4 +207,3 @@ clean_all()
 	log_end_msg $ES
 	return $ES
 }
-

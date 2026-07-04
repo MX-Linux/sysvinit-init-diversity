@@ -7,7 +7,7 @@ Author: Tomas Pospisek <tpo@debian.org>
 
 --- a/man/shutdown.8
 +++ b/man/shutdown.8
-@@ -132,6 +132,10 @@
+@@ -139,6 +139,10 @@
  .\"{{{  time
  .IP \fItime\fP
  When to shutdown.

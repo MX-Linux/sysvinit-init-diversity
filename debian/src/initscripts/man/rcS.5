@@ -92,6 +92,10 @@ marked 'auto'
 .RB ( NOT " 'allow\-hotplug')"
 in \fB/etc/network/interfaces\fP.
 
+.IP \fBEXTRAKERNELFS\fP
+A space separated list of additional optional kernel filesystems to mount. The
+current available options are \fBdebugfs\fP and \fBcgroup2\fP.
+
 .SH NOTE
 The \fBEDITMOTD\fP, \fBRAMRUN\fP, \fBCONCURRENCY\fP and \fBUTC\fP variables are
 no longer used. To inhibit concurrent boot, use

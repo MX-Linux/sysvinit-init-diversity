@@ -12,24 +12,24 @@ PATH=/sbin:/bin
 
 . /lib/lsb/init-functions
 
-do_start () {
+do_start() {
 	log_action_msg "Will now switch to single-user mode"
 	exec telinit S
 }
 
 case "$1" in
-  start)
-	do_start
-	;;
-  restart|reload|force-reload)
-	echo "Error: argument '$1' not supported" >&2
-	exit 3
-	;;
-  stop|status)
-	# No-op
-	;;
-  *)
-	echo "Usage: $0 start|stop" >&2
-	exit 3
-	;;
+	start)
+		do_start
+		;;
+	restart | reload | force-reload)
+		echo "Error: argument '$1' not supported" >&2
+		exit 3
+		;;
+	stop | status)
+		# No-op
+		;;
+	*)
+		echo "Usage: $0 start|stop" >&2
+		exit 3
+		;;
 esac

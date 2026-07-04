@@ -2,6 +2,5 @@
 # See uscan(1) for format
 
 version=4
-opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%<project>-$1.tar.gz%" \
-https://github.com/slicer69/sysvinit/tags \
-(?:.*?/)?v?(\d[\d.]*)\.tar\.gz debian uupdate
+opts="filenamemangle=s%(?:.*?)?v?@ANY_VERSION@(@ARCHIVE_EXT@)%@PACKAGE@-$1$2%" \
+https://codeberg.org/thejessesmith/sysvinit/tags (?:.*?/)?v?@ANY_VERSION@@ARCHIVE_EXT@

@@ -210,8 +210,8 @@ status_of_proc () {
 
 log_use_fancy_output () {
     if  [ -t 1 ] &&
-	[ "x${TERM:-}" != "x" ] &&
-	[ "x${TERM:-}" != "xdumb" ]
+	[ "${TERM:-}" ] &&
+	[ "${TERM:-}" != "dumb" ]
     then
         [ -z $FANCYTTY ] && return 0 || true
     else

@@ -16,28 +16,28 @@
 . /lib/init/bootclean.sh
 
 case "$1" in
-  start|"")
-	# Clean /tmp, /run and /run/lock.  Remove the .clean files to
-	# force initial cleaning.  This is intended to allow cleaning
-	# of directories masked by mounts while the system was
-	# previously running, which would otherwise prevent them being
-	# cleaned.
-	rm -f /tmp/.clean /run/.clean /run/lock/.clean
+	start | "")
+		# Clean /tmp, /run and /run/lock.  Remove the .clean files to
+		# force initial cleaning.  This is intended to allow cleaning
+		# of directories masked by mounts while the system was
+		# previously running, which would otherwise prevent them being
+		# cleaned.
+		rm -f /tmp/.clean /run/.clean /run/lock/.clean
 
-	clean_all
-	exit $?
-	;;
-  restart|reload|force-reload)
-	echo "Error: argument '$1' not supported" >&2
-	exit 3
-	;;
-  stop|status)
-	# No-op
-	;;
-  *)
-	echo "Usage: checkroot-bootclean.sh [start|stop]" >&2
-	exit 3
-	;;
+		clean_all
+		exit $?
+		;;
+	restart | reload | force-reload)
+		echo "Error: argument '$1' not supported" >&2
+		exit 3
+		;;
+	stop | status)
+		# No-op
+		;;
+	*)
+		echo "Usage: checkroot-bootclean.sh [start|stop]" >&2
+		exit 3
+		;;
 esac
 
 :

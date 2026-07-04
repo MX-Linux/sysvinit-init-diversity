@@ -50,7 +50,9 @@ If unset, this variable defaults to the
 value.
 .It Ev NAME
 Additional environment variables are sourced from
-.Pa /etc/default/${NAME} .
+.Pa /etc/default/${NAME}
+and made available to executed processes and within overridden functions,
+but not at top level.
 If unset, this variable defaults to the basename of the
 .Dq Ev DAEMON
 value.
@@ -69,6 +71,10 @@ the command name will not be used to match the processes.
 If unset, this variable defaults to the
 .Dq Ev NAME
 value.
+.It Ev TYPE
+If this variable is set to
+.Dq Li oneshot ,
+experimental support for a oneshot service is enabled.
 .It Ev PIDFILE
 Path to file where the process identifier of the started daemon
 will be stored during start.

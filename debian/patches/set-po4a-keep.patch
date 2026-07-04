@@ -7,4 +7,4 @@
 +            --keep 40 \
              --msgid-bugs-address "Jesse <jsmith@resonatingmedia.com>"
  
- all:
+ LANGS := $(patsubst po/%.po,%,$(wildcard po/*.po))

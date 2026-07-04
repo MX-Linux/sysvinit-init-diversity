@@ -42,8 +42,8 @@ po::powerokwait:/etc/init.d/powerfail stop
 
 # /sbin/getty invocations for the runlevels.
 #
-# The "id" field MUST be the same as the last
-# characters of the device (after "tty").
+# The "id" field is traditionally the same as the
+# last characters of the device (after "tty").
 #
 # Format:
 #  <id>:<runlevels>:<action>:<process>
@@ -51,24 +51,24 @@ po::powerokwait:/etc/init.d/powerfail stop
 # Note that on most Debian systems tty7 is used by the X Window System,
 # so if you want to add more getty's go ahead but skip tty7 if you run X.
 #
-1:2345:respawn:/sbin/getty --noclear 38400 tty1
-2:23:respawn:/sbin/getty 38400 tty2
-3:23:respawn:/sbin/getty 38400 tty3
-4:23:respawn:/sbin/getty 38400 tty4
-5:23:respawn:/sbin/getty 38400 tty5
-6:23:respawn:/sbin/getty 38400 tty6
+1:2345:respawn:/sbin/getty -8 --noclear 38400 tty1
+2:23:respawn:/sbin/getty -8 38400 tty2
+3:23:respawn:/sbin/getty -8 38400 tty3
+4:23:respawn:/sbin/getty -8 38400 tty4
+5:23:respawn:/sbin/getty -8 38400 tty5
+6:23:respawn:/sbin/getty -8 38400 tty6
 
 # Example how to put a getty on a serial line (for a terminal)
 #
-#T0:23:respawn:/sbin/getty -L ttyS0 9600 vt100
-#T1:23:respawn:/sbin/getty -L ttyS1 9600 vt100
+#S0:23:respawn:/sbin/getty -L ttyS0 9600 vt100
+#S1:23:respawn:/sbin/getty -L ttyS1 9600 vt100
 #
 # or on a USB serial line
 #U0:23:respawn:/sbin/getty -L ttyUSB0 9600 vt100
 
 # Example how to put a getty on a modem line.
 #
-#T3:23:respawn:/sbin/mgetty -x0 -s 57600 ttyS3
+#S3:23:respawn:/sbin/mgetty -x0 -s 57600 ttyS3
 
 # Example for systemd-nspawn
 # Only /dev/console exists inside nspawn, so we need a getty on that.

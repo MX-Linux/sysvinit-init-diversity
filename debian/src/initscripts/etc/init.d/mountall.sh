@@ -2,7 +2,7 @@
 ### BEGIN INIT INFO
 # Provides:          mountall
 # Required-Start:    checkfs checkroot-bootclean
-# Required-Stop: 
+# Required-Stop:
 # Default-Start:     S
 # Default-Stop:
 # Short-Description: Mount all filesystems.
@@ -36,8 +36,7 @@ do_start() {
 			-O no_netdev
 	}
 	pre_mountall
-	if [ "$VERBOSE" = no ]
-	then
+	if [ "$VERBOSE" = no ]; then
 		log_action_begin_msg "Mounting local filesystems"
 		mount_all_local
 		log_action_end_msg $?
@@ -73,14 +72,12 @@ do_start() {
 	#
 	# Ignore 255 status due to swap already being enabled
 	#
-	if [ "$NOSWAP" = yes ]
-	then
+	if [ "$NOSWAP" = yes ]; then
 		[ "$VERBOSE" = no ] || log_warning_msg "Not activating swap as requested via bootoption noswap."
 	else
-		if [ "$VERBOSE" = no ]
-		then
+		if [ "$VERBOSE" = no ]; then
 			log_action_begin_msg "Activating swapfile swap, if any"
-			swapon -a -e 2>/dev/null || :  # Stifle "Device or resource busy"
+			swapon -a -e 2>/dev/null || : # Stifle "Device or resource busy"
 			log_action_end_msg 0
 		else
 			log_daemon_msg "Will now activate swapfile swap, if any"
@@ -102,20 +99,20 @@ do_start() {
 }
 
 case "$1" in
-  start|"")
-	do_start
-	;;
-  restart|reload|force-reload)
-	echo "Error: argument '$1' not supported" >&2
-	exit 3
-	;;
-  stop|status)
-	# No-op
-	;;
-  *)
-	echo "Usage: mountall.sh [start|stop]" >&2
-	exit 3
-	;;
+	start | "")
+		do_start
+		;;
+	restart | reload | force-reload)
+		echo "Error: argument '$1' not supported" >&2
+		exit 3
+		;;
+	stop | status)
+		# No-op
+		;;
+	*)
+		echo "Usage: mountall.sh [start|stop]" >&2
+		exit 3
+		;;
 esac
 
 :

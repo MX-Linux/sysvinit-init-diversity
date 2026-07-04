@@ -16,19 +16,19 @@ DAEMON=/sbin/bootlogd
 [ -d /run/systemd/system ] && exit 0
 
 case "$1" in
-  start)
-	/etc/init.d/bootlogd stop
-	;;
-  stop|restart|force-reload)
-	# No-op
-	;;
-  status)
-	exec /etc/init.d/bootlogd status
-	;;
-  *)
-	echo "Usage: $NAME {start|stop|restart|force-reload}" >&2
-	exit 3
-	;;
+	start)
+		/etc/init.d/bootlogd stop
+		;;
+	stop | restart | force-reload)
+		# No-op
+		;;
+	status)
+		exec /etc/init.d/bootlogd status
+		;;
+	*)
+		echo "Usage: $NAME {start|stop|restart|force-reload}" >&2
+		exit 3
+		;;
 esac
 
 :

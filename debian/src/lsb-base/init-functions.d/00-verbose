@@ -1,5 +1,5 @@
 vlog_daemon_msg() {
-	if test x"${VERBOSE:-yes}" != x"no" ; then
+	if [ "${VERBOSE:-yes}" != "no" ]; then
 		log_daemon_msg "$@"
 	else
 		true
@@ -7,7 +7,7 @@ vlog_daemon_msg() {
 }
 
 vlog_begin_msg() {
-	if test x"${VERBOSE:-yes}" != x"no" ; then
+	if [ "${VERBOSE:-yes}" != "no" ]; then
 		log_begin_msg "$@"
 	else
 		true
@@ -15,7 +15,7 @@ vlog_begin_msg() {
 }
 
 vlog_action_msg() {
-	if test x"${VERBOSE:-yes}" != x"no" ; then
+	if [ "${VERBOSE:-yes}" != "no" ]; then
 		log_action_msg "$@"
 	else
 		true
@@ -23,7 +23,7 @@ vlog_action_msg() {
 }
 
 vlog_action_begin_msg() {
-	if test x"${VERBOSE:-yes}" != x"no" ; then
+	if [ "${VERBOSE:-yes}" != "no" ]; then
 		log_action_begin_msg "$@"
 	else
 		true
@@ -31,7 +31,7 @@ vlog_action_begin_msg() {
 }
 
 vlog_action_end_msg() {
-	if test x"${VERBOSE:-yes}" != x"no" ; then
+	if [ "${VERBOSE:-yes}" != "no" ]; then
 		log_action_end_msg "$@"
 	else
 		true
@@ -40,7 +40,7 @@ vlog_action_end_msg() {
 
 
 vlog_end_msg() {
-	if test x"${VERBOSE:-yes}" != x"no" ; then
+	if [ "${VERBOSE:-yes}" != "no" ]; then
 		log_end_msg "$@"
 	else
 		return ${1:-1}

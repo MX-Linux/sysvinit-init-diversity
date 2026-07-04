@@ -20,18 +20,18 @@ RELEASE="$(uname -r)"
 . /lib/lsb/init-functions
 
 case "${KERNEL}:${RELEASE}" in
-  Linux:[01].*|Linux:2.[01].*)
-	FLAGS=""
-	;;
-  Linux:2.[23].*|Linux:2.4.?|Linux:2.4.?-*|Linux:2.4.10|Linux:2.4.10-*)
-	FLAGS="-f"
-	;;
-  *)
-	FLAGS="-f -l"
-	;;
+	Linux:[01].* | Linux:2.[01].*)
+		FLAGS=""
+		;;
+	Linux:2.[23].* | Linux:2.4.? | Linux:2.4.?-* | Linux:2.4.10 | Linux:2.4.10-*)
+		FLAGS="-f"
+		;;
+	*)
+		FLAGS="-f -l"
+		;;
 esac
 
-do_stop () {
+do_stop() {
 	# Write a reboot record to /var/log/wtmp before unmounting
 	halt -w
 
@@ -43,36 +43,34 @@ do_stop () {
 	#
 
 	DIRS=""
-	while read -r DEV MTPT FSTYPE OPTS REST
-	do
+	while read -r DEV MTPT FSTYPE OPTS REST; do
 		case "$MTPT" in
-		  /|/proc|/dev|/dev/pts|/dev/shm|/proc/*|/sys|/run|/run/*)
-			continue
-			;;
+			/ | /proc | /dev | /dev/pts | /dev/shm | /proc/* | /sys | /run | /run/*)
+				continue
+				;;
 		esac
 		case "$FSTYPE" in
-		  nfs|nfs4|smbfs|ncp|ncpfs|cifs|coda|ceph)
-			DIRS="$MTPT $DIRS"
-			;;
-		  proc|procfs|linprocfs|devpts|usbfs|usbdevfs|sysfs)
-			DIRS="$MTPT $DIRS"
-			;;
-		esac
-		case "$OPTS" in
-		  _netdev|*,_netdev|_netdev,*|*,_netdev,*)
-			case "$FSTYPE" in
-			  ocfs2|gfs)
+			nfs | nfs4 | smbfs | ncp | ncpfs | cifs | coda | ceph)
+				DIRS="$MTPT $DIRS"
+				FLAGS="--recursive $FLAGS"
 				;;
-			  *)
+			proc | procfs | linprocfs | devpts | usbfs | usbdevfs | sysfs)
 				DIRS="$MTPT $DIRS"
 				;;
-			esac
-			;;
 		esac
-	done < /etc/mtab
+		case "$OPTS" in
+			_netdev | *,_netdev | _netdev,* | *,_netdev,*)
+				case "$FSTYPE" in
+					ocfs2 | gfs) ;;
+					*)
+						DIRS="$MTPT $DIRS"
+						;;
+				esac
+				;;
+		esac
+	done </etc/mtab
 
-	if [ "$DIRS" ]
-	then
+	if [ "$DIRS" ]; then
 		[ "$VERBOSE" = no ] || log_action_begin_msg "Unmounting remote and non-toplevel virtual filesystems"
 		fstab-decode umount $FLAGS $DIRS
 		ES=$?
@@ -87,20 +85,20 @@ do_stop () {
 }
 
 case "$1" in
-  start|status)
-	# No-op
-	;;
-  restart|reload|force-reload)
-	echo "Error: argument '$1' not supported" >&2
-	exit 3
-	;;
-  stop|"")
-	do_stop
-	;;
-  *)
-	echo "Usage: umountnfs.sh [start|stop]" >&2
-	exit 3
-	;;
+	start | status)
+		# No-op
+		;;
+	restart | reload | force-reload)
+		echo "Error: argument '$1' not supported" >&2
+		exit 3
+		;;
+	stop | "")
+		do_stop
+		;;
+	*)
+		echo "Usage: umountnfs.sh [start|stop]" >&2
+		exit 3
+		;;
 esac
 
 :

@@ -19,26 +19,32 @@ do_invoke() {
 	local rv=0 rc
 	# ACPI (without explicit label)
 	do_$1 '' \
-	    /sys/class/backlight/acpi_video0/brightness \
-	    /sys/class/backlight/acpi_video0/max_brightness
+		/sys/class/backlight/acpi_video0/brightness \
+		/sys/class/backlight/acpi_video0/max_brightness
 	rc=$?
-	test $rc -lt $rv || rv=$rc
+	[ $rc -lt $rv ] || rv=$rc
 	# Intel
 	do_$1 intel \
-	    /sys/class/backlight/intel_backlight/brightness \
-	    /sys/class/backlight/intel_backlight/max_brightness
+		/sys/class/backlight/intel_backlight/brightness \
+		/sys/class/backlight/intel_backlight/max_brightness
 	rc=$?
-	test $rc -lt $rv || rv=$rc
+	[ $rc -lt $rv ] || rv=$rc
+	# AMD
+	do_$1 amd \
+		/sys/class/backlight/amdgpu_bl*/brightness \
+		/sys/class/backlight/amdgpu_bl*/max_brightness
+	rc=$?
+	[ $rc -lt $rv ] || rv=$rc
 	# could insert others using the same scheme here
 	return $rv
 }
 
 do_status() {
 	local label=$1 knob=$2 max=$3 file=$SAVEFILE_PREFIX${1:+.$1}
-	test -e "$knob" || return 0
+	[ -e "$knob" ] || return 0
 
 	MSG="Current${label:+ $label} brightness level is $(cat "$knob")"
-	if test -f "$file"; then
+	if [ -f "$file" ]; then
 		log_success_msg "${MSG}, saved value is $(cat "$file")"
 		return 0
 	fi
@@ -48,49 +54,49 @@ do_status() {
 
 do_start() {
 	local label=$1 knob=$2 max=$3 file=$SAVEFILE_PREFIX${1:+.$1}
-	test -e "$knob" || return 0
+	[ -e "$knob" ] || return 0
 
-	test x"$VERBOSE" = x"no" || \
-	    log_action_begin_msg Initialising $label brightness level
+	[ "$VERBOSE" = "no" ] ||
+		log_action_begin_msg Initialising $label brightness level
 
-	if test -f "$file"; then
+	if [ -f "$file" ]; then
 		cat "$file" >"$knob"
 	else
 		cat "$max" >"$knob"
 	fi
 	local rv=$?
-	test x"$VERBOSE" = x"no" || log_action_end_msg $rv
+	[ "$VERBOSE" = "no" ] || log_action_end_msg $rv
 	return $rv
 }
 
 do_stop() {
 	local label=$1 knob=$2 max=$3 file=$SAVEFILE_PREFIX${1:+.$1}
-	test -e "$knob" || return 0
+	[ -e "$knob" ] || return 0
 
 	# If the backlight is off, don't save to avoid blank display after
 	# reboot. See Devuan #617.
-	test "$(cat $knob)" -eq 0 && return 0
+	[ "$(cat $knob)" -eq 0 ] && return 0
 
-	test x"$VERBOSE" = x"no" || \
-	    log_action_begin_msg Saving $label brightness level
+	[ "$VERBOSE" = "no" ] ||
+		log_action_begin_msg Saving $label brightness level
 	cat "$knob" >"$file"
 	local rv=$?
-	test x"$VERBOSE" = x"no" || log_action_end_msg $rv
+	[ "$VERBOSE" = "no" ] || log_action_end_msg $rv
 	return $rv
 }
 
 case $1 in
-(start|restart|reload|force-reload)
-	do_invoke start
-	;;
-(stop)
-	do_invoke stop
-	;;
-(status)
-	do_invoke status
-	;;
-(*)
-	echo >&2 "Usage: $0 {start|stop|restart|reload|force-reload|status}"
-	exit 3
-	;;
+	start | restart | reload | force-reload)
+		do_invoke start
+		;;
+	stop)
+		do_invoke stop
+		;;
+	status)
+		do_invoke status
+		;;
+	*)
+		echo >&2 "Usage: $0 {start|stop|restart|reload|force-reload|status}"
+		exit 3
+		;;
 esac

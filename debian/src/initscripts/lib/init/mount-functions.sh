@@ -5,29 +5,26 @@
 
 # List available fstab files, including any files in /etc/fstab.d.
 # This looks ugly, but we can't use find and it's safer than globbing.
-fstab_files()
-{
-    echo /etc/fstab
-    if [ -d /etc/fstab.d ]; then
-        ls -1 /etc/fstab.d | grep '\.fstab$' | sed -e 's;^;/etc/fstab.d/;'
-    fi
+fstab_files() {
+	echo /etc/fstab
+	if [ -d /etc/fstab.d ]; then
+		ls -1 /etc/fstab.d | grep '\.fstab$' | sed -e 's;^;/etc/fstab.d/;'
+	fi
 }
 
 # $1: directory
 is_empty_dir() {
-	for FILE in $1/* $1/.*
-	do
+	for FILE in $1/* $1/.*; do
 		case "$FILE" in
-		  "$1/.*") return 0 ;;
-		  "$1/*"|"$1/."|"$1/..") continue ;;
-		  *) return 1 ;;
+			"$1/.*") return 0 ;;
+			"$1/*" | "$1/." | "$1/..") continue ;;
+			*) return 1 ;;
 		esac
 	done
 	return 0
 }
 
-
-selinux_enabled () {
+selinux_enabled() {
 	which selinuxenabled >/dev/null 2>&1 && selinuxenabled
 }
 
@@ -36,7 +33,7 @@ selinux_enabled () {
 #	to the device node,
 # 2) Swap that is on a md device or a file that may be on a md
 #	device,
-_read_fstab () {
+_read_fstab() {
 	echo "fstabroot=/dev/root"
 	echo "rootdev=none"
 	echo "roottype=none"
@@ -50,39 +47,36 @@ _read_fstab () {
 		if [ -f "$file" ]; then
 			while read DEV MTPT FSTYPE OPTS DUMP PASS JUNK; do
 				case "$DEV" in
-				  ""|\#*)
-					continue
-					;;
-				  /dev/mapper/*)
-					[ "$FSTYPE" = "swap" ] && echo swap_on_lv=yes
-					;;
-				  /dev/*)
-					;;
-				  LABEL=*|UUID=*|PARTUUID=*|PARTLABEL=*)
-					if [ "$MTPT" = "/" ] && [ -x /sbin/findfs ]
-					then
-						DEV="$(findfs "$DEV")"
-					fi
-					;;
-				  /*)
-					[ "$FSTYPE" = "swap" ] && echo swap_on_file=yes
-					;;
-				  *)
-					;;
+					"" | \#*)
+						continue
+						;;
+					/dev/mapper/*)
+						[ "$FSTYPE" = "swap" ] && echo swap_on_lv=yes
+						;;
+					/dev/*) ;;
+					LABEL=* | UUID=* | PARTUUID=* | PARTLABEL=*)
+						if [ "$MTPT" = "/" ] && [ -x /sbin/findfs ]; then
+							DEV="$(findfs "$DEV")"
+						fi
+						;;
+					/*)
+						[ "$FSTYPE" = "swap" ] && echo swap_on_file=yes
+						;;
+					*) ;;
 				esac
 				[ "$MTPT" != "/" ] && continue
 				echo rootdev=\"$DEV\"
 				echo fstabroot=\"$DEV\"
 				echo rootopts=\"$OPTS\"
 				echo roottype=\"$FSTYPE\"
-				( [ "$PASS" != 0 ] && [ "$PASS" != "" ]   ) && echo rootcheck=yes
-				( [ "$FSTYPE" = "nfs" ] || [ "$FSTYPE" = "nfs4" ] ) && echo rootcheck=no
+				([ "$PASS" != 0 ] && [ "$PASS" != "" ]) && echo rootcheck=yes
+				([ "$FSTYPE" = "nfs" ] || [ "$FSTYPE" = "nfs4" ]) && echo rootcheck=no
 				case "$OPTS" in
-				  ro|ro,*|*,ro|*,ro,*)
-					echo rootmode=ro
-					;;
+					ro | ro,* | *,ro | *,ro,*)
+						echo rootmode=ro
+						;;
 				esac
-			done < "$file"
+			done <"$file"
 		fi
 	done
 }
@@ -99,14 +93,14 @@ _read_fstab () {
 #    - swap_on_file
 #    - swap_on_lv
 
-read_fstab () {
+read_fstab() {
 	eval "$(_read_fstab)"
 }
 
 # Find a specific fstab entry
 # $1=mountpoint
 # $2=fstype (optional)
-_read_fstab_entry () {
+_read_fstab_entry() {
 	# Not found by default.
 	echo "MNT_FSNAME="
 	echo "MNT_DIR="
@@ -119,24 +113,24 @@ _read_fstab_entry () {
 		if [ -f "$file" ]; then
 			while read MNT_FSNAME MNT_DIR MNT_TYPE MNT_OPTS MNT_FREQ MNT_PASS MNT_JUNK; do
 				case "$MNT_FSNAME" in
-				  ""|\#*)
-					continue;
-					;;
+					"" | \#*)
+						continue
+						;;
 				esac
 				if [ "$MNT_DIR" = "$1" ]; then
 					if [ -n "$2" ]; then
-						[ "$MNT_TYPE" = "$2" ] || continue;
+						[ "$MNT_TYPE" = "$2" ] || continue
 					fi
-	                                echo "MNT_FSNAME=$MNT_FSNAME"
-	                                echo "MNT_DIR=$MNT_DIR"
-	                                echo "MNT_TYPE=$MNT_TYPE"
-	                                echo "MNT_OPTS=$MNT_OPTS"
-	                                echo "MNT_FREQ=$MNT_FREQ"
-	                                echo "MNT_PASS=$MNT_PASS"
+					echo "MNT_FSNAME=$MNT_FSNAME"
+					echo "MNT_DIR=$MNT_DIR"
+					echo "MNT_TYPE=$MNT_TYPE"
+					echo "MNT_OPTS=$MNT_OPTS"
+					echo "MNT_FREQ=$MNT_FREQ"
+					echo "MNT_PASS=$MNT_PASS"
 					break 2
 				fi
 				MNT_DIR=""
-			done < "$file"
+			done <"$file"
 		fi
 	done
 }
@@ -145,7 +139,7 @@ _read_fstab_entry () {
 # $1=mountpoint
 # $2=fstype (optional)
 # returns 0 on success, 1 on failure (not found or no fstab)
-read_fstab_entry () {
+read_fstab_entry() {
 	eval "$(_read_fstab_entry "$1" "$2")"
 
 	# Not found by default.
@@ -164,7 +158,7 @@ read_fstab_entry () {
 # $4: mount point
 # $5: mount device name
 # $6... : extra mount program options
-domount () {
+domount() {
 	MOUNTMODE="$1"
 	PRIFSTYPE="$2"
 	ALTFSTYPE="$3"
@@ -180,41 +174,47 @@ domount () {
 	# Mount options from fstab
 	FSTAB_OPTS=
 
-	if [ "$MOUNTMODE" = remount ] ; then
+	if [ "$MOUNTMODE" = remount ]; then
 		case "$KERNEL" in
 			*FreeBSD)
 				case "$PRIFSTYPE" in
-					proc|tmpfs|sysfs)
+					proc | tmpfs | sysfs)
 						# can't be remounted
 						return 0
-					;;
+						;;
 				esac
-			;;
+				;;
 		esac
 	fi
 
 	if [ "$PRIFSTYPE" = proc ]; then
 		case "$KERNEL" in
-			Linux)     FSTYPE=proc ;;
-			GNU)       FSTYPE=proc; FS_OPTS="-ocompatible" ;;
-			*FreeBSD)  FSTYPE=linprocfs ;;
-			*)         FSTYPE=procfs ;;
+			Linux) FSTYPE=proc ;;
+			GNU)
+				FSTYPE=proc
+				FS_OPTS="-ocompatible"
+				;;
+			*FreeBSD) FSTYPE=linprocfs ;;
+			*) FSTYPE=procfs ;;
 		esac
 	elif [ "$PRIFSTYPE" = bind ]; then
 		case "$KERNEL" in
-			Linux)     FSTYPE="$DEVNAME"; FS_OPTS="-obind" ;;
-			*FreeBSD)  FSTYPE=nullfs ;;
-			GNU)       FSTYPE=firmlink ;;
-			*)         FSTYPE=none ;;
+			Linux)
+				FSTYPE="$DEVNAME"
+				FS_OPTS="-obind"
+				;;
+			*FreeBSD) FSTYPE=nullfs ;;
+			GNU) FSTYPE=firmlink ;;
+			*) FSTYPE=none ;;
 		esac
 	elif [ "$PRIFSTYPE" = tmpfs ]; then
 		# always accept tmpfs, to mount /run before /proc
 		case "$KERNEL" in
-			*)	FSTYPE=$PRIFSTYPE ;;
+			*) FSTYPE=$PRIFSTYPE ;;
 		esac
 	elif [ "$PRIFSTYPE" = efivarfs ]; then
 		# accept efivarfs if its mountpoint exists; kernel will auto-load the module
-		if test -d /sys/firmware/efi/efivars; then
+		if [ -d /sys/firmware/efi/efivars ]; then
 			FSTYPE=$PRIFSTYPE
 		fi
 	elif grep -E -qs "$PRIFSTYPE\$" /proc/filesystems; then
@@ -235,14 +235,14 @@ domount () {
 
 	# We give file system type as device name if not specified as
 	# an argument
-	if [ -z "$DEVNAME" ] ; then
-	    DEVNAME=$FSTYPE
+	if [ -z "$DEVNAME" ]; then
+		DEVNAME=$FSTYPE
 	fi
 
 	# Get the mount options from /etc/fstab
 	if read_fstab_entry "$MTPT" "$FSTYPE"; then
 		case "$MNT_OPTS" in
-			noauto|*,noauto|noauto,*|*,noauto,*)
+			noauto | *,noauto | noauto,* | *,noauto,*)
 				return
 				;;
 			?*)
@@ -251,8 +251,7 @@ domount () {
 		esac
 	fi
 
-	if [ ! -d "$MTPT" ]
-	then
+	if [ ! -d "$MTPT" ]; then
 		log_warning_msg "Mount point '$MTPT' does not exist. Skipping mount."
 		return
 	fi
@@ -266,18 +265,20 @@ domount () {
 		MOUNTMODE=remount
 	fi
 
+	status=
 	case "$MOUNTMODE" in
 		mount)
 			if mountpoint -q "$MTPT"; then
-			    # Already mounted, probably moved from the
-			    # initramfs, so remount with the
-			    # user-specified mount options later on.
-			    :
+				# Already mounted, probably moved from the
+				# initramfs, so remount with the
+				# user-specified mount options later on.
+				:
 			else
 				if [ "$VERBOSE" != "no" ]; then
 					is_empty_dir "$MTPT" >/dev/null 2>&1 || log_warning_msg "Files under mount point '$MTPT' will be hidden."
 				fi
 				mount $MOUNTFLAGS -t $FSTYPE $CALLER_OPTS $FSTAB_OPTS $FS_OPTS $DEVNAME $MTPT
+				status=$?
 				if [ "$FSTYPE" = "tmpfs" ] && [ -x /sbin/restorecon ]; then
 					/sbin/restorecon $MTPT
 				fi
@@ -287,24 +288,27 @@ domount () {
 			if mountpoint -q "$MTPT"; then
 				# Remount with user-specified mount options
 				mount $MOUNTFLAGS -oremount $CALLER_OPTS $FSTAB_OPTS $MTPT
+				status=$?
 			fi
 			;;
 	esac
+	if [ "$FSTYPE" = "tmpfs" ] && [ "$status" ] && [ "$status" -eq 0 ]; then
+		# Make sure we don't get cleaned
+		touch "$MTPT/.tmpfs"
+	fi
 }
 
 #
 # Preserve /var/run and /var/lock mountpoints
 #
-pre_mountall ()
-{
-    :
+pre_mountall() {
+	:
 }
 
 # If the device/inode are the same, a bind mount already exists or the
 # transition is complete, so set up is not required.  Otherwise bind
 # mount $SRC on $DEST.
-bind_mount ()
-{
+bind_mount() {
 	SRC=$1
 	DEST=$2
 
@@ -315,18 +319,24 @@ bind_mount ()
 	sdest="$(/usr/bin/stat -L --format="%d %i" "$DEST" 2>/dev/null || :)"
 
 	case "$(uname -s)" in
-		Linux)     FSTYPE=$SRC; OPTS="-orw -obind" ;;
-		*FreeBSD)  FSTYPE=nullfs; OPTS="-orw" ;;
-		GNU)       FSTYPE=firmlink ;;
-		*)         FSTYPE=none ;;
+		Linux)
+			FSTYPE=$SRC
+			OPTS="-orw -obind"
+			;;
+		*FreeBSD)
+			FSTYPE=nullfs
+			OPTS="-orw"
+			;;
+		GNU) FSTYPE=firmlink ;;
+		*) FSTYPE=none ;;
 	esac
 
 	# Bind mount $SRC on $DEST
 	if [ -n "$ssrc" ] && [ "$ssrc" != "$sdest" ]; then
 		[ -d "$DEST" ] || mkdir "$DEST"
 		[ -x /sbin/restorecon ] && /sbin/restorecon "$DEST"
-		if mount -t $FSTYPE "$SRC" "$DEST" $OPTS ; then
-			echo "Please reboot to complete migration to tmpfs-based /run" > "${DEST}/.run-transition"
+		if mount -t $FSTYPE "$SRC" "$DEST" $OPTS; then
+			echo "Please reboot to complete migration to tmpfs-based /run" >"${DEST}/.run-transition"
 			return 0
 		fi
 		return 1
@@ -339,18 +349,17 @@ bind_mount ()
 # Migrate a directory to /run and create compatibility symlink or bind
 # mount.
 #
-run_migrate ()
-{
+run_migrate() {
 	OLD=$1
 	RUN=$2
 
 	KERNEL="$(uname -s)"
 	OPTS=""
 	case "$KERNEL" in
-		Linux)     FSTYPE=none OPTS="-orw -obind";;
-		*FreeBSD)  FSTYPE=nullfs OPTS="-orw" ;;
-		GNU)       FSTYPE=firmlink ;;
-		*)         FSTYPE=none ;;
+		Linux) FSTYPE=none OPTS="-orw -obind" ;;
+		*FreeBSD) FSTYPE=nullfs OPTS="-orw" ;;
+		GNU) FSTYPE=firmlink ;;
+		*) FSTYPE=none ;;
 	esac
 
 	# Create absolute symlink if not already present.  This is to
@@ -376,15 +385,15 @@ run_migrate ()
 	# them yet.  If the user explicitly mounted a filesystem here,
 	# it will be cleaned out, but this would happen later on when
 	# bootclean runs in any case.
-	if [ ! -L "$OLD" ] && [ -d "$OLD" ] ; then
+	if [ ! -L "$OLD" ] && [ -d "$OLD" ]; then
 		rm -fr "$OLD" 2>/dev/null || true
 	fi
 
 	# If removal failed (directory still exists), set up bind mount.
-	if [ ! -L "$OLD" ] && [ -d "$OLD" ] ; then
+	if [ ! -L "$OLD" ] && [ -d "$OLD" ]; then
 		if [ "$OLD" != "/tmp" ]; then
 			log_warning_msg "Filesystem mounted on $OLD; setting up compatibility bind mount."
-			if read_fstab_entry "$OLD" ; then
+			if read_fstab_entry "$OLD"; then
 				log_warning_msg "Please remove this mount from /etc/fstab; it is no longer needed, and it is preventing completion of the transition to $RUN."
 			fi
 		fi
@@ -406,8 +415,7 @@ run_migrate ()
 #
 # Migrate /etc/mtab to a compatibility symlink
 #
-mtab_migrate ()
-{
+mtab_migrate() {
 	# Don't symlink if /proc/mounts does not exist.
 	if [ ! -r "/proc/mounts" ]; then
 		return 1
@@ -431,8 +439,7 @@ mtab_migrate ()
 # For compatibility, create /var/run and /var/lock symlinks to /run
 # and /run/lock, respectively.
 #
-post_mountall ()
-{
+post_mountall() {
 	# /var/run and /var/lock are now /run and /run/lock,
 	# respectively.  Cope with filesystems being deliberately
 	# mounted on /var/run and /var/lock.  We will create bind
@@ -451,10 +458,10 @@ post_mountall ()
 	# migrate; it should only ever be needed on broken systems.
 	RAMSHM_ON_DEV_SHM="yes"
 	if read_fstab_entry "/dev/shm"; then
-	    RAMSHM_ON_DEV_SHM="yes"
+		RAMSHM_ON_DEV_SHM="yes"
 	fi
 	if read_fstab_entry "/run/shm"; then
-	    RAMSHM_ON_DEV_SHM="no"
+		RAMSHM_ON_DEV_SHM="no"
 	fi
 
 	if [ -L /run ]; then
@@ -463,36 +470,35 @@ post_mountall ()
 			mkdir /run
 		fi
 		if bind_mount /var/run /run; then
-		    bind_mount /var/lock /run/lock
-		    if [ yes = "$RAMSHM_ON_DEV_SHM" ]; then
-			run_migrate /run/shm /dev/shm
-		    else
-			run_migrate /dev/shm /run/shm
-		    fi
+			bind_mount /var/lock /run/lock
+			if [ yes = "$RAMSHM_ON_DEV_SHM" ]; then
+				run_migrate /run/shm /dev/shm
+			else
+				run_migrate /dev/shm /run/shm
+			fi
 		fi
 	else
-	    run_migrate /var/run /run
-	    run_migrate /var/lock /run/lock
-	    if [ yes = "$RAMSHM_ON_DEV_SHM" ]; then
-		run_migrate /run/shm /dev/shm
-	    else
-		run_migrate /dev/shm /run/shm
-	    fi
+		run_migrate /var/run /run
+		run_migrate /var/lock /run/lock
+		if [ yes = "$RAMSHM_ON_DEV_SHM" ]; then
+			run_migrate /run/shm /dev/shm
+		else
+			run_migrate /dev/shm /run/shm
+		fi
 	fi
 }
 
 # Mount /run
-mount_run ()
-{
+mount_run() {
 	MNTMODE="$1"
 	KERNEL="$(uname -s)"
 
-	if [ "$MNTMODE" = remount ] ; then
+	if [ "$MNTMODE" = remount ]; then
 		case "$KERNEL" in
 			*FreeBSD)
 				# tmpfs can't be remounted
 				return 0
-			;;
+				;;
 		esac
 	fi
 
@@ -508,7 +514,7 @@ mount_run ()
 	# If /run/shm is separately mounted, /run can be safely mounted noexec.
 	RUNEXEC=
 	if [ yes = "$RAMSHM" ] || read_fstab_entry /run/shm tmpfs; then
-	    RUNEXEC=',noexec'
+		RUNEXEC=',noexec'
 	fi
 	# TODO: Add -onodev once checkroot no longer creates a device node.
 	domount "$MNTMODE" tmpfs shmfs /run tmpfs "-onosuid$RUNEXEC$RUN_OPT"
@@ -516,23 +522,19 @@ mount_run ()
 
 	# Make pidfile omit directory for sendsigs
 	[ -d /run/sendsigs.omit.d ] || mkdir --mode=755 /run/sendsigs.omit.d/
-
-	# Make sure we don't get cleaned
-	touch /run/.tmpfs
 }
 
 # Mount /run/lock
-mount_lock ()
-{
+mount_lock() {
 	MNTMODE="$1"
 	KERNEL="$(uname -s)"
 
-	if [ "$MNTMODE" = remount ] ; then
+	if [ "$MNTMODE" = remount ]; then
 		case "$KERNEL" in
 			*FreeBSD)
 				# tmpfs can't be remounted
 				return 0
-			;;
+				;;
 		esac
 	fi
 
@@ -543,16 +545,16 @@ mount_lock ()
 	# Now check if there's an entry in /etc/fstab.  If there is,
 	# it overrides the existing RAMLOCK setting.
 	if read_fstab_entry /run/lock; then
-	    if [ "$MNT_TYPE" = "tmpfs" ] ; then
-		RAMLOCK="yes"
-	    else
-		RAMLOCK="no"
-	    fi
+		if [ "$MNT_TYPE" = "tmpfs" ]; then
+			RAMLOCK="yes"
+		else
+			RAMLOCK="no"
+		fi
 	fi
 
 	NODEV="nodev,"
 	case "$KERNEL" in
-		*FreeBSD|GNU)  NODEV="" ;;
+		*FreeBSD | GNU) NODEV="" ;;
 	esac
 
 	# Mount /run/lock as tmpfs if enabled.  This prevents user DoS
@@ -560,16 +562,13 @@ mount_lock ()
 	# additional tmpfs.
 	if [ yes = "$RAMLOCK" ]; then
 		domount "$MNTMODE" tmpfs shmfs /run/lock tmpfs "-o${NODEV}noexec,nosuid$LOCK_OPT"
-		# Make sure we don't get cleaned
-		touch /run/lock/.tmpfs
 	else
 		chmod "$LOCK_MODE" /run/lock
 	fi
 }
 
 # Mount /run/shm
-mount_shm ()
-{
+mount_shm() {
 	MNTMODE="$1"
 
 	RAMSHM_ON_DEV_SHM="yes"
@@ -590,10 +589,9 @@ mount_shm ()
 		RAMSHM_ON_DEV_SHM="no"
 	fi
 
-	if [ ! -d "$SHMDIR" ]
-	then
+	if [ ! -d "$SHMDIR" ]; then
 		# Remove possible previous reverse symlink.
-		if [ -h "$SHMDIR" ] ; then
+		if [ -h "$SHMDIR" ]; then
 			rm -f "$SHMDIR"
 		fi
 		mkdir --mode=755 "$SHMDIR"
@@ -603,7 +601,7 @@ mount_shm ()
 	# Now check if there's an entry in /etc/fstab.  If there is,
 	# it overrides the existing RAMSHM setting.
 	if read_fstab_entry "$SHMDIR"; then
-		if [ "$MNT_TYPE" = "tmpfs" ] ; then
+		if [ "$MNT_TYPE" = "tmpfs" ]; then
 			RAMSHM="yes"
 		else
 			RAMSHM="no"
@@ -613,13 +611,11 @@ mount_shm ()
 	KERNEL="$(uname -s)"
 	NODEV="nodev,"
 	case "$KERNEL" in
-		*FreeBSD|GNU)  NODEV="" ;;
+		*FreeBSD | GNU) NODEV="" ;;
 	esac
 
 	if [ yes = "$RAMSHM" ]; then
 		domount "$MNTMODE" tmpfs shmfs "$SHMDIR" tmpfs "-onosuid,${NODEV}noexec$SHM_OPT"
-		# Make sure we don't get cleaned
-		touch "$SHMDIR"/.tmpfs
 	else
 		chmod "$SHM_MODE" "$SHMDIR"
 	fi
@@ -637,8 +633,7 @@ mount_shm ()
 #
 # Mount /tmp
 #
-mount_tmp ()
-{
+mount_tmp() {
 	MNTMODE="$1"
 
 	# If /tmp is a symlink, make sure the linked-to directory exists.
@@ -661,7 +656,7 @@ mount_tmp ()
 		# If there's an entry in fstab for /tmp (any
 		# filesystem type, not just tmpfs), then we don't need
 		# a tmpfs on /tmp by default.
-		if read_fstab_entry /tmp ; then
+		if read_fstab_entry /tmp; then
 			:
 		else
 			log_warning_msg "Root filesystem is read-only; mounting tmpfs on /tmp"
@@ -673,7 +668,7 @@ mount_tmp ()
 		# If there's an entry in fstab for /tmp (any
 		# filesystem type, not just tmpfs), then we don't need
 		# a tmpfs on /tmp by default.
-		if read_fstab_entry /tmp ; then
+		if read_fstab_entry /tmp; then
 			:
 		else
 			log_warning_msg "Root filesystem has insufficient free space; mounting tmpfs on /tmp"
@@ -684,24 +679,22 @@ mount_tmp ()
 	# Now check if there's an entry in /etc/fstab.  If there is,
 	# it overrides all the above settings.
 	if read_fstab_entry /tmp; then
-	    if [ "$MNT_TYPE" = "tmpfs" ] ; then
-		RAMTMP="yes"
-	    else
-		RAMTMP="no"
-	    fi
+		if [ "$MNT_TYPE" = "tmpfs" ]; then
+			RAMTMP="yes"
+		else
+			RAMTMP="no"
+		fi
 	fi
 
 	KERNEL="$(uname -s)"
 	NODEV="nodev,"
 	case "$KERNEL" in
-		*FreeBSD|GNU)  NODEV="" ;;
+		*FreeBSD | GNU) NODEV="" ;;
 	esac
 
 	# Mount /tmp as tmpfs if enabled.
 	if [ yes = "$RAMTMP" ]; then
 		domount "$MNTMODE" tmpfs shmfs /tmp tmpfs "-o${NODEV}nosuid$TMP_OPT"
-		# Make sure we don't get cleaned
-		touch /tmp/.tmpfs
 	else
 		# When root is still read only, this will fail.
 		if [ mount_noupdate != "$MNTMODE" ] && [ rw = "$rootmode" ]; then
@@ -711,15 +704,15 @@ mount_tmp ()
 }
 
 is_fastboot_active() {
-	if [ -f /fastboot ] ; then
-	    return 0
+	if [ -f /fastboot ]; then
+		return 0
 	fi
-	for cmd in $(cat /proc/cmdline) ; do
-	    case "$cmd" in
-		fastboot)
-		    return 0
-		    ;;
-	    esac
+	for cmd in $(cat /proc/cmdline); do
+		case "$cmd" in
+			fastboot)
+				return 0
+				;;
+		esac
 	done
 	return 1
 }
@@ -727,10 +720,10 @@ is_fastboot_active() {
 # This function does not actually belong here; it is duct-tape solution
 # for #901289.
 logsave_best_effort() {
-	if [ -x /sbin/logsave ] && [ -e "${FSCK_LOGFILE}" ]; then
+	if [ -x /sbin/logsave ]; then
 		logsave -s "${FSCK_LOGFILE}" "$@"
 	else
-		log_failure_msg "Cannot persist the following output on disc"
+		log_warning_msg "Cannot persist the following output on disc"
 		"$@"
 	fi
 }

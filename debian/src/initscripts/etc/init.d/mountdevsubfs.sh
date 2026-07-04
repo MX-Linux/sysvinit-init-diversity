@@ -30,7 +30,7 @@ KERNEL="$(uname -s)"
 
 # idempotent, but does not change extant symlinks (or directories, for /dev/fd)
 trylink() {
-	test -h "/dev/$1" || test -d "/dev/$1" || ln -s -- "$2" "/dev/$1" || {
+	[ -h "/dev/$1" ] || [ -d "/dev/$1" ] || ln -s -- "$2" "/dev/$1" || {
 		echo "W: unable to ensure link /dev/$1 -> $2"
 		ls -lad "/dev/$1"
 	} >&2
@@ -51,10 +51,8 @@ mount_filesystems() {
 	mount_shm "$MNTMODE"
 
 	# Mount /dev/pts
-	if [ "$KERNEL" = Linux ]
-	then
-		if [ ! -d /dev/pts ]
-		then
+	if [ "$KERNEL" = Linux ]; then
+		if [ ! -d /dev/pts ]; then
 			mkdir --mode=755 /dev/pts
 			[ -x /sbin/restorecon ] && /sbin/restorecon /dev/pts
 		fi
@@ -63,21 +61,21 @@ mount_filesystems() {
 }
 
 case "$1" in
-  "")
-	echo "Warning: mountdevsubfs should be called with the 'start' argument." >&2
-	mount_filesystems mount_noupdate
-	;;
-  start)
-	mount_filesystems mount_noupdate
-	;;
-  restart|reload|force-reload)
-	mount_filesystems remount
-	;;
-  stop|status)
-	# No-op
-	;;
-  *)
-	echo "Usage: mountdevsubfs [start|stop]" >&2
-	exit 3
-	;;
+	"")
+		echo "Warning: mountdevsubfs should be called with the 'start' argument." >&2
+		mount_filesystems mount_noupdate
+		;;
+	start)
+		mount_filesystems mount_noupdate
+		;;
+	restart | reload | force-reload)
+		mount_filesystems remount
+		;;
+	stop | status)
+		# No-op
+		;;
+	*)
+		echo "Usage: mountdevsubfs [start|stop]" >&2
+		exit 3
+		;;
 esac

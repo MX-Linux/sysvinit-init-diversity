@@ -16,7 +16,7 @@ PATH=/sbin:/bin
 . /lib/init/vars.sh
 . /lib/lsb/init-functions
 
-do_start () {
+do_start() {
 	[ -f /etc/hostname ] || return
 	HOSTNAME="$(cat /etc/hostname)"
 
@@ -28,23 +28,23 @@ do_start () {
 }
 
 case "$1" in
-  start|"")
-	do_start
-	;;
-  restart|reload|force-reload)
-	echo "Error: argument '$1' not supported" >&2
-	exit 3
-	;;
-  stop)
-	# No-op
-	;;
-  status)
-	exit 0
-	;;
-  *)
-	echo "Usage: hostname.sh [start|stop]" >&2
-	exit 3
-	;;
+	start | "")
+		do_start
+		;;
+	restart | reload | force-reload)
+		echo "Error: argument '$1' not supported" >&2
+		exit 3
+		;;
+	stop)
+		# No-op
+		;;
+	status)
+		exit 0
+		;;
+	*)
+		echo "Usage: hostname.sh [start|stop]" >&2
+		exit 3
+		;;
 esac
 
 :

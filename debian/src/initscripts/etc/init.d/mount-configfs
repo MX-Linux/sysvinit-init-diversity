@@ -15,20 +15,20 @@ set -eu
 export PATH=/usr/bin:/bin
 
 case ${1:-missing} in
-(start|restart|force-reload)
-	readonly mountpoint='/sys/kernel/config'
-	# This directory exists only if "configfs" module was loaded by "kmod"
-	# script.
-	test -d "${mountpoint}"              || exit 0
-	! findmnt "${mountpoint}" >/dev/null || exit 0
+	start | restart | force-reload)
+		readonly mountpoint='/sys/kernel/config'
+		# This directory exists only if "configfs" module was loaded by "kmod"
+		# script.
+		[ -d "${mountpoint}" ] || exit 0
+		! findmnt "${mountpoint}" >/dev/null || exit 0
 
-	mount none -t configfs "${mountpoint}"
-	;;
-(stop)
-	# No-op
-	;;
-(*)
-	echo "Usage: mount-configfs [start|stop]" >&2
-	exit 3
-	;;
+		mount none -t configfs "${mountpoint}"
+		;;
+	stop)
+		# No-op
+		;;
+	*)
+		echo "Usage: mount-configfs [start|stop]" >&2
+		exit 3
+		;;
 esac

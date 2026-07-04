@@ -16,39 +16,35 @@ PATH=/usr/sbin:/usr/bin:/sbin:/bin
 
 . /lib/lsb/init-functions
 
-do_stop () {
-	if [ "$INIT_HALT" = "" ]
-	then
+do_stop() {
+	if [ "$INIT_HALT" = "" ]; then
 		case "$HALT" in
-		  [Pp]*)
-			INIT_HALT=POWEROFF
-			;;
-		  [Hh]*)
-			INIT_HALT=HALT
-			;;
-		  *)
-			INIT_HALT=POWEROFF
-			;;
+			[Pp]*)
+				INIT_HALT=POWEROFF
+				;;
+			[Hh]*)
+				INIT_HALT=HALT
+				;;
+			*)
+				INIT_HALT=POWEROFF
+				;;
 		esac
 	fi
 
 	# See if we need to cut the power.
-	if [ "$INIT_HALT" = "POWEROFF" ] && [ -x /etc/init.d/ups-monitor ]
-	then
+	if [ "$INIT_HALT" = "POWEROFF" ] && [ -x /etc/init.d/ups-monitor ]; then
 		/etc/init.d/ups-monitor poweroff
 	fi
 
 	# Don't shut down drives if we're using RAID.
 	hddown="-h"
-	if grep -qs '^md.*active' /proc/mdstat
-	then
+	if grep -qs '^md.*active' /proc/mdstat; then
 		hddown=""
 	fi
 
 	# If INIT_HALT=HALT don't poweroff.
 	poweroff="-p"
-	if [ "$INIT_HALT" = "HALT" ]
-	then
+	if [ "$INIT_HALT" = "HALT" ]; then
 		poweroff=""
 	fi
 
@@ -64,20 +60,20 @@ do_stop () {
 }
 
 case "$1" in
-  start|status)
-	# No-op
-	;;
-  restart|reload|force-reload)
-	echo "Error: argument '$1' not supported" >&2
-	exit 3
-	;;
-  stop)
-	do_stop
-	;;
-  *)
-	echo "Usage: $0 start|stop" >&2
-	exit 3
-	;;
+	start | status)
+		# No-op
+		;;
+	restart | reload | force-reload)
+		echo "Error: argument '$1' not supported" >&2
+		exit 3
+		;;
+	stop)
+		do_stop
+		;;
+	*)
+		echo "Usage: $0 start|stop" >&2
+		exit 3
+		;;
 esac
 
 :

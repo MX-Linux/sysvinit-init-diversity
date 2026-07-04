@@ -12,7 +12,7 @@ PATH=/usr/sbin:/usr/bin:/sbin:/bin
 
 . /lib/lsb/init-functions
 
-do_start () {
+do_start() {
 	# Kill all processes.
 	log_action_begin_msg "Asking all remaining processes to terminate"
 	killall5 -15 # SIGTERM
@@ -24,39 +24,39 @@ do_start () {
 		# value, because either killall5 work and it make
 		# sense to wait for processes to die, or it fail and
 		# there is nothing to wait for.
-		
-		if killall5 -18 ; then
-		    :
+
+		if killall5 -18; then
+			:
 		else
-		    alldead=1
-		    break
+			alldead=1
+			break
 		fi
 
 		sleep 1
 	done
-	if [ -z "$alldead" ] ; then
-	    log_action_begin_msg "Killing all remaining processes"
-	    killall5 -9 # SIGKILL
-	    log_action_end_msg 1
+	if [ -z "$alldead" ]; then
+		log_action_begin_msg "Killing all remaining processes"
+		killall5 -9 # SIGKILL
+		log_action_end_msg 1
 	else
-	    log_action_begin_msg "All processes ended within $seq seconds."
-	    log_action_end_msg 0
+		log_action_begin_msg "All processes ended within $seq seconds."
+		log_action_end_msg 0
 	fi
 }
 
 case "$1" in
-  start)
-	do_start
-	;;
-  restart|reload|force-reload)
-	echo "Error: argument '$1' not supported" >&2
-	exit 3
-	;;
-  stop|status)
-	# No-op
-	;;
-  *)
-	echo "Usage: $0 start|stop" >&2
-	exit 3
-	;;
+	start)
+		do_start
+		;;
+	restart | reload | force-reload)
+		echo "Error: argument '$1' not supported" >&2
+		exit 3
+		;;
+	stop | status)
+		# No-op
+		;;
+	*)
+		echo "Usage: $0 start|stop" >&2
+		exit 3
+		;;
 esac

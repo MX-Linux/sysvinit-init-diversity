@@ -2,37 +2,33 @@
 # Set tmpfs vars
 #
 
-
 # Get size of physical RAM in kiB
-ram_size ()
-{
-    [ -r /proc/meminfo ] && \
-	grep MemTotal /proc/meminfo | \
-	sed -e 's;.*[[:space:]]\([0-9][0-9]*\)[[:space:]]kB.*;\1;' || :
+ram_size() {
+	[ -r /proc/meminfo ] &&
+		grep MemTotal /proc/meminfo |
+		sed -e 's;.*[[:space:]]\([0-9][0-9]*\)[[:space:]]kB.*;\1;' || :
 }
 
 # Get size of swap space in kiB
-swap_size ()
-{
-    [ -r /proc/meminfo ] && \
-	grep SwapTotal /proc/meminfo | \
-	sed -e 's;.*[[:space:]]\([0-9][0-9]*\)[[:space:]]kB.*;\1;' || :
+swap_size() {
+	[ -r /proc/meminfo ] &&
+		grep SwapTotal /proc/meminfo |
+		sed -e 's;.*[[:space:]]\([0-9][0-9]*\)[[:space:]]kB.*;\1;' || :
 }
 
 #
 # Get total VM size in kiB.  Prints nothing if no RAM and/or swap was
 # detectable.
 #
-vm_size ()
-{
-    RAM=$(ram_size)
-    SWAP=$(swap_size)
+vm_size() {
+	RAM=$(ram_size)
+	SWAP=$(swap_size)
 
-    RAM="${RAM:=0}"
-    SWAP="${SWAP:=0}"
+	RAM="${RAM:=0}"
+	SWAP="${SWAP:=0}"
 
-    echo $((RAM + SWAP))
-    return 0;
+	echo $((RAM + SWAP))
+	return 0
 }
 
 #
@@ -41,42 +37,39 @@ vm_size ()
 # a percentage of RAM and swap combined.  If no swap was available,
 # return as a percentage (tmpfs will use a percentage of RAM only).
 #
-tmpfs_size_vm ()
-{
-# Handle the no-swap case here, i.e. core memory only.  Also handle no
-# memory either (no proc) by just returning the original value.
-    RET="$1"
-    VMTOTAL="$(vm_size)"
-    VMPCT="${RET%\%VM}"
-    if [ "$VMPCT" != "$RET" ]; then
-	if [ -n "$VMTOTAL" ]; then
-	    RET=$(((VMTOTAL / 100) * VMPCT))
-	    RET="${RET}k"
-	else
-	    RET="${VMPCT}%"
+tmpfs_size_vm() {
+	# Handle the no-swap case here, i.e. core memory only.  Also handle no
+	# memory either (no proc) by just returning the original value.
+	RET="$1"
+	VMTOTAL="$(vm_size)"
+	VMPCT="${RET%\%VM}"
+	if [ "$VMPCT" != "$RET" ]; then
+		if [ -n "$VMTOTAL" ]; then
+			RET=$(((VMTOTAL / 100) * VMPCT))
+			RET="${RET}k"
+		else
+			RET="${VMPCT}%"
+		fi
 	fi
-    fi
-    echo "$RET"
+	echo "$RET"
 }
 
 # Free space on /tmp in kiB.
-tmp_free_space ()
-{
-    LC_ALL=C df -kP /tmp | grep -v Filesystem | sed -e 's;^[^[:space:]][^[:space:]]*[[:space:]][[:space:]]*[0-9][0-9]*[[:space:]][[:space:]]*[0-9][0-9]*[[:space:]][[:space:]]*\([0-9][0-9]*\)[[:space:]][[:space:]]*.*$;\1;'
+tmp_free_space() {
+	LC_ALL=C df -kP /tmp | grep -v Filesystem | sed -e 's;^[^[:space:]][^[:space:]]*[[:space:]][[:space:]]*[0-9][0-9]*[[:space:]][[:space:]]*[0-9][0-9]*[[:space:]][[:space:]]*\([0-9][0-9]*\)[[:space:]][[:space:]]*.*$;\1;'
 }
 
 # Check if an emergency tmpfs is needed
-need_overflow_tmp ()
-{
-    [ "$VERBOSE" != no ] && log_action_begin_msg "Checking minimum space in /tmp"
+need_overflow_tmp() {
+	[ "$VERBOSE" != no ] && log_action_begin_msg "Checking minimum space in /tmp"
 
-    ROOT_FREE_SPACE=$(tmp_free_space)
-    [ "$VERBOSE" != no ] && log_action_end_msg 0
-    if [ -n "$ROOT_FREE_SPACE" ] && [ -n "$TMP_OVERFLOW_LIMIT" ] \
-	&& [ $((ROOT_FREE_SPACE < TMP_OVERFLOW_LIMIT)) = "1" ]; then
-	return 0
-    fi
-    return 1
+	ROOT_FREE_SPACE=$(tmp_free_space)
+	[ "$VERBOSE" != no ] && log_action_end_msg 0
+	if [ -n "$ROOT_FREE_SPACE" ] && [ -n "$TMP_OVERFLOW_LIMIT" ] &&
+		[ $((ROOT_FREE_SPACE < TMP_OVERFLOW_LIMIT)) = "1" ]; then
+		return 0
+	fi
+	return 1
 }
 
 # Set defaults for /etc/default/tmpfs, in case any options are
@@ -87,11 +80,11 @@ need_overflow_tmp ()
 RAMLOCK=yes
 # These might be overridden by /etc/default/rcS
 
-if test -z "${RAMSHM}" ; then
+if [ -z "${RAMSHM}" ]; then
 	# tmpfs can not be used for shm yet, see #923078
 	case "$(uname -s)" in
-		(GNU) RAMSHM=no  ;;
-		(*)   RAMSHM=yes ;;
+		GNU) RAMSHM=no ;;
+		*) RAMSHM=yes ;;
 	esac
 fi
 
@@ -115,7 +108,7 @@ TMP_OVERFLOW_LIMIT=1024
 
 # Source conffile
 if [ -f /etc/default/tmpfs ]; then
-    . /etc/default/tmpfs
+	. /etc/default/tmpfs
 fi
 
 TMPFS_SIZE="$(tmpfs_size_vm "$TMPFS_SIZE")"
