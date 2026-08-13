@@ -1,8 +1,91 @@
-sysvinit (3.18-1.1~mx27) mx; urgency=medium
+sysvinit (3.18-1~mx27) mx; urgency=medium
 
-  * init-diversity fork
+  * init-diversity forky update
 
- -- Mark Hindley <demo@mx1>  Sat, 04 Jul 2026 16:36:13 -0400
+ -- Dolphin Oracle <dolphinoracle@gmail.com>  Sat, 04 Jul 2026 16:36:13 -0400
+
+sysvinit (3.18-1) unstable; urgency=medium
+
+  * New upstream version 3.18. Includes:-
+    - inittab.5 updates (Closes: #1095701)
+    - reduce verbosity of inittab.d support (Closes: #1131137)
+  * d/control:
+    - update libselinux Build-Depends (lintian).
+    - bump Standards Version (drop Priority: optional, now it is the
+      default).
+    -drop 'R³: no' now it is the default.
+  * Refresh patches.
+  * d/copyright: remove sysd2v stanza, dropped upstream.
+
+ -- Mark Hindley <leepen@debian.org>  Tue, 31 Mar 2026 13:26:42 +0100
+
+sysvinit (3.15-6) unstable; urgency=medium
+
+  [ Mark Hindley ]
+  * d/initscripts.maintscript: remove time-served motd conffile handling.
+  * init-d-script: move test for setpriv availability to top level.
+    (Closes: #1119154)
+
+  [ Edgar Yllescas ]
+  * Add support for AMD backlight (Closes: #1120309).
+
+ -- Mark Hindley <leepen@debian.org>  Sun, 16 Nov 2025 08:46:32 +0000
+
+sysvinit (3.15-5) unstable; urgency=medium
+
+  * Release to unstable
+
+ -- Mark Hindley <leepen@debian.org>  Tue, 21 Oct 2025 08:25:58 +0100
+
+sysvinit (3.15-4) experimental; urgency=medium
+
+  * Don't test for existing logfile before running logsave(8).
+    (Closes: #1106830)
+  * umountfs: recursively umount tmpfs. (Closes: #704108)
+  * umountnfs: recursively umount network filesystems. (Closes: #444262)
+  * /etc/init.d/rc: also set opost to avoid staircase effect.
+    (Closes: #617249)
+
+ -- Mark Hindley <leepen@debian.org>  Tue, 14 Oct 2025 08:40:20 +0100
+
+sysvinit (3.15-3) experimental; urgency=medium
+
+  * Update inittab on new installations to use ids consistent with
+    inittab(5). (Closes: #538257)
+  * Deprecate forcefsck. (Closes: #686895)
+  * d/control: add Depends login (no longer Essential). (Closes: #1116288)
+  * Only create .tmpfs if mount has been successful. (Closes: #719249)
+  * Remove all obsolete commented AC checking code. See #326647 and
+    related for discussion.
+  * d/copyright: remove old FSF address (lintian).
+  * d/copyright: update upstream contact and URL.
+
+ -- Mark Hindley <leepen@debian.org>  Wed, 08 Oct 2025 09:59:57 +0100
+
+sysvinit (3.15-2) experimental; urgency=medium
+
+  * Update inittab on new installations to assume 8bit clean environment.
+    (Closes: #435287)
+  * Emphasise that /etc/fstab overrides /etc/default/tmpfs. (Closes: #688412)  
+  * init-d-script:
+    - Support TYPE=oneshot. (Closes: #1108969)
+    - comply with style guidelines.
+  * Add rcS option EXTRAKERNELFS and framework to support mounting
+    additional kernel filesystems. Currently supported options are debugfs
+    and cgroupfs2. (Closes: #539352)
+
+ -- Mark Hindley <leepen@debian.org>  Tue, 23 Sep 2025 08:29:46 +0100
+
+sysvinit (3.15-1) experimental; urgency=medium
+
+  * New upstream version 3.15
+  * d/src/README.style: add recommended initscript style.
+  * d/src: comply with recommended style. (Closes: #922423)
+  * init-d-script.5: document that /etc/default/$NAME environment is not
+    available in script top-level. (Closes: #931867)
+  * d/control, d/watch: update following upstream  migration to codeberg.
+
+ -- Mark Hindley <leepen@debian.org>  Tue, 09 Sep 2025 13:40:37 +0100
 
 sysvinit (3.18-1) unstable; urgency=medium
 
@@ -90,88 +173,7 @@ sysvinit (3.15-1) experimental; urgency=medium
 sysvinit (3.14-4~mx25u2) mx; urgency=medium
 
   * set up dpkg-diverts to match sysvinit-core
-sysvinit (3.18-1) unstable; urgency=medium
 
-  * New upstream version 3.18. Includes:-
-    - inittab.5 updates (Closes: #1095701)
-    - reduce verbosity of inittab.d support (Closes: #1131137)
-  * d/control:
-    - update libselinux Build-Depends (lintian).
-    - bump Standards Version (drop Priority: optional, now it is the
-      default).
-    -drop 'R³: no' now it is the default.
-  * Refresh patches.
-  * d/copyright: remove sysd2v stanza, dropped upstream.
-
- -- Mark Hindley <leepen@debian.org>  Tue, 31 Mar 2026 13:26:42 +0100
-
-sysvinit (3.15-6) unstable; urgency=medium
-
-  [ Mark Hindley ]
-  * d/initscripts.maintscript: remove time-served motd conffile handling.
-  * init-d-script: move test for setpriv availability to top level.
-    (Closes: #1119154)
-
-  [ Edgar Yllescas ]
-  * Add support for AMD backlight (Closes: #1120309).
-
- -- Mark Hindley <leepen@debian.org>  Sun, 16 Nov 2025 08:46:32 +0000
-
-sysvinit (3.15-5) unstable; urgency=medium
-
-  * Release to unstable
-
- -- Mark Hindley <leepen@debian.org>  Tue, 21 Oct 2025 08:25:58 +0100
-
-sysvinit (3.15-4) experimental; urgency=medium
-
-  * Don't test for existing logfile before running logsave(8).
-    (Closes: #1106830)
-  * umountfs: recursively umount tmpfs. (Closes: #704108)
-  * umountnfs: recursively umount network filesystems. (Closes: #444262)
-  * /etc/init.d/rc: also set opost to avoid staircase effect.
-    (Closes: #617249)
-
- -- Mark Hindley <leepen@debian.org>  Tue, 14 Oct 2025 08:40:20 +0100
-
-sysvinit (3.15-3) experimental; urgency=medium
-
-  * Update inittab on new installations to use ids consistent with
-    inittab(5). (Closes: #538257)
-  * Deprecate forcefsck. (Closes: #686895)
-  * d/control: add Depends login (no longer Essential). (Closes: #1116288)
-  * Only create .tmpfs if mount has been successful. (Closes: #719249)
-  * Remove all obsolete commented AC checking code. See #326647 and
-    related for discussion.
-  * d/copyright: remove old FSF address (lintian).
-  * d/copyright: update upstream contact and URL.
-
- -- Mark Hindley <leepen@debian.org>  Wed, 08 Oct 2025 09:59:57 +0100
-
-sysvinit (3.15-2) experimental; urgency=medium
-
-  * Update inittab on new installations to assume 8bit clean environment.
-    (Closes: #435287)
-  * Emphasise that /etc/fstab overrides /etc/default/tmpfs. (Closes: #688412)  
-  * init-d-script:
-    - Support TYPE=oneshot. (Closes: #1108969)
-    - comply with style guidelines.
-  * Add rcS option EXTRAKERNELFS and framework to support mounting
-    additional kernel filesystems. Currently supported options are debugfs
-    and cgroupfs2. (Closes: #539352)
-
- -- Mark Hindley <leepen@debian.org>  Tue, 23 Sep 2025 08:29:46 +0100
-
-sysvinit (3.15-1) experimental; urgency=medium
-
-  * New upstream version 3.15
-  * d/src/README.style: add recommended initscript style.
-  * d/src: comply with recommended style. (Closes: #922423)
-  * init-d-script.5: document that /etc/default/$NAME environment is not
-    available in script top-level. (Closes: #931867)
-  * d/control, d/watch: update following upstream  migration to codeberg.
-
- -- Mark Hindley <leepen@debian.org>  Tue, 09 Sep 2025 13:40:37 +0100
  -- Dolphin Oracle <dolphinoracle@gmail.com>  Sun, 25 Jan 2026 11:35:02 -0500
 
 sysvinit (3.14-4~mx25u1) mx; urgency=medium
@@ -183,7 +185,7 @@ sysvinit (3.14-4~mx25u1) mx; urgency=medium
 
 sysvinit (3.14-4~mx25) mx; urgency=medium
 
-  * adjust versioning 
+  * adjust versioning
 
  -- Dolphin Oracle <dolphinoracle@gmail.com>  Sat, 03 Jan 2026 19:06:39 -0500
 
@@ -191,7 +193,7 @@ sysvinit (3.14-4.0experimental7.1~mx25) mx; urgency=medium
 
   [ ProwlerGr ]
   * prerm updated to allow removal when booted with sysvinit-core
-  
+
   [ Dolphin Oracle ]
   * mx versioning
 
@@ -211,7 +213,7 @@ sysvinit (3.14-4.0experimental5) UNRELEASED; urgency=medium
   * grub-files-mx added as alternative dependency to grub-init-diversity (for MX)
 
  -- ProwlerGr <Prowler73@gmail.com>  Fri, 14 Nov 2025 22:22:22 +1000
- 
+
 sysvinit (3.14-4.0experimental4) UNRELEASED; urgency=medium
 
   * prerm to exit with code "1" if sysvinit is detected as PID 1
